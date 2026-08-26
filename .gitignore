@@ -1,0 +1,15 @@
+# Data
+data/
+
+# Checkpoints (large binary files)
+results/**/*.pt
+results/**/*.pkl
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db

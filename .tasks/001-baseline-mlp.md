@@ -10,12 +10,12 @@ A Rede A é a vara de medir de toda a comparação qualitativa. Sem uma baseline
 
 ## Escopo
 
-- [ ] Criar `src/baseline.py` — MLP float32 com PyTorch
-- [ ] Loader de MNIST (usar `torchvision.datasets.MNIST`)
-- [ ] Treino com Adam ou SGD, mini-batches
-- [ ] Avaliação no conjunto de teste
-- [ ] Salvar curva de acurácia em `results/exp-001-baseline/`
-- [ ] Acurácia de teste ≥ 97%
+- [x] Criar `src/baseline.py` — MLP float32 com PyTorch
+- [x] Loader de MNIST (usar `torchvision.datasets.MNIST`)
+- [x] Treino com Adam ou SGD, mini-batches
+- [x] Avaliação no conjunto de teste
+- [x] Salvar curva de acurácia em `results/exp-001-baseline/`
+- [x] Acurácia de teste ≥ 97% (alcançado: **97.97%**)
 
 ## Especificações técnicas
 
@@ -29,12 +29,12 @@ A Rede A é a vara de medir de toda a comparação qualitativa. Sem uma baseline
 
 ## Critérios de aceitação
 
-- [ ] Código implementado em `src/baseline.py`
-- [ ] Executa sem erro: `python src/baseline.py`
-- [ ] Acurácia de teste ≥ 97%
-- [ ] Curva de acurácia salva em `results/exp-001-baseline/accuracy_curve.csv`
-- [ ] Commit [001] com mensagem descritiva
-- [ ] Resultados salvos em `results/exp-001-baseline/`
+- [x] Código implementado em `src/baseline.py`
+- [x] Executa sem erro: `python src/baseline.py`
+- [x] Acurácia de teste ≥ 97% (alcançado: **97.97%**)
+- [x] Curva de acurácia salva em `results/exp-001-baseline/accuracy_curve.csv`
+- [x] Commit [001] com mensagem descritiva
+- [x] Resultados salvos em `results/exp-001-baseline/`
 
 ## Notas de implementação
 
