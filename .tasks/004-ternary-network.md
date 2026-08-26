@@ -10,18 +10,18 @@ Este é o núcleo da técnica proposta. A Rede B tem a mesma topologia da baseli
 
 ## Escopo
 
-- [ ] Criar `src/ternary_net.py`
-- [ ] Classe `TernaryLayer(input_dim, output_dim)` — camada individual
+- [x] Criar `src/ternary_net.py`
+- [x] Classe `TernaryLayer(input_dim, output_dim)` — camada individual
   - Pesos: matriz `(output_dim, input_dim)` de int8 em `{−1, 0, +1}`
   - Bias: vetor `(output_dim,)` de int32 em `[−input_dim, input_dim−1]`
   - Forward: `z = W @ x + b`, saída = `step(z)` (degrau: 1 se z > 0, 0 se z ≤ 0)
   - Método `quantize_weights()` — garante W ∈ {−1, 0, +1}
-- [ ] Classe `TernaryNet()` — rede completa
+- [x] Classe `TernaryNet()` — rede completa
   - Constrói 3 camadas: 784→128, 128→64, 64→10
   - Forward pass completo
   - Método `get_weights()` — retorna lista de matrizes de peso (para métricas)
   - Método `get_biases()` — retorna lista de vetores de bias
-- [ ] Forward pass testável com input MNIST (784,)
+- [x] Forward pass testável com input MNIST (784,)
 
 ## Especificações técnicas
 
@@ -39,12 +39,12 @@ Este é o núcleo da técnica proposta. A Rede B tem a mesma topologia da baseli
 
 ## Critérios de aceitação
 
-- [ ] Código implementado em `src/ternary_net.py`
-- [ ] `TernaryNet` forward pass com input (1, 784) retorna output (1, 10)
+- [x] Código implementado em `src/ternary_net.py`
+- [x] `TernaryNet` forward pass com input (1, 784) retorna output (1, 10)
 - [ ] Pesos permanecem em {−1, 0, +1} após qualquer operação
-- [ ] Bias permanece dentro da faixa permitida
-- [ ] Executa sem erro com input MNIST real
-- [ ] Commit [004] com mensagem descritiva
+- [x] Bias permanece dentro da faixa permitida
+- [x] Executa sem erro com input MNIST real
+- [x] Commit [004] com mensagem descritiva
 
 ## Notas de implementação
 
