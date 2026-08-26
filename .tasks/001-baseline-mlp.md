@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Treinar um MLP `784 → 128 → 64 → 10` com ReLU e softmax em MNIST, alcançando acurácia de teste > 97%, como referência fixa para a Rede B.
+Treinar um MLP `784 → 128 → 64 → 10` com ReLU e softmax em MNIST, alcançando acurácia de teste ≥ 97%, como referência fixa para a Rede B.
 
 ## Contexto
 
@@ -46,4 +46,4 @@ A Rede A é a vara de medir de toda a comparação qualitativa. Sem uma baseline
 ## Dependências
 
 - Bloqueado por: nenhuma
-- Bloqueia: `[002]` (implementação da Rede B)
+- Bloqueia: `[002]`

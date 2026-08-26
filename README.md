@@ -108,23 +108,46 @@ ideia/
 ├── README.md              ← este arquivo
 ├── AGENTS.md              ← convenções para agentes de IA neste repositório
 ├── .tasks/
-│   └── task.md            ← padrão de escrita de tasks
-├── .tasks/
+│   ├── task.md            ← padrão de escrita de tasks
 │   ├── 001-baseline-mlp.md
-│   ├── 002-ternary-counter-impl.md
-│   └── ...
+│   ├── 002-utils-and-data.md
+│   ├── 003-fake-gradient.md
+│   ├── 004-ternary-network.md
+│   ├── 005-counter-rules.md
+│   ├── 006-reset-policies.md
+│   ├── 007-b1-initial.md
+│   ├── 008-b2-b3-variants.md
+│   └── 009-comparison.md
 ├── src/
 │   ├── baseline.py        ← Rede A (MLP float32 + backprop)
 │   ├── ternary_net.py     ← Rede B (pesos ternários + contadores)
+│   ├── ternary_b1.py      ← B1: por neurônio + error-feedback
+│   ├── ternary_b2.py      ← B2: por camada Top-K
+│   ├── ternary_b3.py      ← B3: por rede Top-K
 │   ├── counter_rules.py   ← Regras de atualização (B1, B2, B3)
 │   ├── reset_policies.py  ← Políticas de zeragem de contadores
 │   ├── fake_gradient.py   ← Função fake gradient triangular + quantização
+│   ├── compare.py         ← Comparação qualitativa final
 │   └── utils.py           ← Utilitários (MNIST loader, plotting, etc.)
 ├── experiments/
 │   └── ...                ← scripts de execução de cada configuração
 └── results/
     └── ...                ← gráficos, logs, métricas
 ```
+
+## Tasks (ordem de execução)
+
+| # | Task | Descrição | Bloqueia |
+|---|------|-----------|----------|
+| 001 | `001-baseline-mlp.md` | MLP baseline `784→128→64→10` em MNIST (≥97% acurácia) | 002 |
+| 002 | `002-utils-and-data.md` | Utilitários: loader MNIST, plotting, salvamento | 003, 004 |
+| 003 | `003-fake-gradient.md` | Fake gradient triangular + quantização | 004, 005, 006 |
+| 004 | `004-ternary-network.md` | Núcleo Rede B: pesos ternários, bias, degrau | 005, 006, 007 |
+| 005 | `005-counter-rules.md` | Regras de atualização: B1, B2, B3 | 007, 008 |
+| 006 | `006-reset-policies.md` | Políticas de reset: error-feedback, full, normalize | 007, 008 |
+| 007 | `007-b1-initial.md` | B1 + error-feedback — valida aprendizado em MNIST | 008 |
+| 008 | `008-b2-b3-variants.md` | B2 e B3 × 3 políticas de reset (6 configs) | 009 |
+| 009 | `009-comparison.md` | Comparação qualitativa final: A vs. todas as B | — |
 
 ## Dependências
 
