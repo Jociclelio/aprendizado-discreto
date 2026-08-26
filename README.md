@@ -1,0 +1,139 @@
+# Rede Neural Ternária com Aprendizado por Contadores Discretos
+
+## Resumo conceitual e proposta de experimento em MNIST
+
+---
+
+## Parte 1 — Resumo da ideia (conceitos)
+
+### Representação
+
+- **Pesos**: ternários, `W ∈ {−1, 0, +1}`. Nenhum peso latente de alta precisão existe por trás — o valor ternário *é* o estado real do parâmetro, não uma sombra de um float.
+- **Ativação**: função degrau centrada em zero.
+- **Bias**: inteiro, `b ∈ [−N, N−1]`, onde `N` é o número de entradas da camada anterior — a faixa que cobre exatamente todos os limiares de decisão distintos possíveis dado que a soma ponderada de `N` entradas bipolares por pesos ternários satura em `[−N, N]`.
+
+### Aprendizado sem gradiente verdadeiro
+
+- **Fake gradient**: substituto triangular, centrado em zero, da derivada (indefinida) da função degrau. É a versão discreta/quantizada de uma técnica já estabelecida na literatura (*Straight-Through Estimator*; *surrogate gradients* em redes de picos). A altura do pico do triângulo é o hiperparâmetro equivalente à taxa de aprendizado.
+- **Quantização do fake gradient**: o valor triangular contínuo é aproximado para um pequeno conjunto de inteiros (ex.: `{-2,-1,0,1,2}`, ou, no caso extremo, apenas o sinal `{-1,0,1}` — equivalente a SignSGD).
+- **Propagação por camada (regra da cadeia discreta)**: o sinal de erro se propaga de trás para frente, camada por camada, usando quantidades sempre locais:
+  - `δ_j^(l) = fake_grad(z_j^(l)) · Σ_k w_jk^(l+1) · δ_k^(l+1)`
+  - Incremento do contador de uma conexão: `Δ_ij = δ_j^(l) · x_i^(l−1)`
+  - Incremento do contador de um bias: `Δ_j = δ_j^(l)` (sem multiplicar pela entrada — o bias é tratado como peso de uma entrada fantasma sempre igual a 1)
+- **Contadores integrativos por conexão**: cada peso e cada bias possui seu próprio contador inteiro `C_ij`, que acumula `Δ_ij` ao longo de várias amostras. O contador representa evidência histórica acumulada de que aquela conexão deveria mudar de estado.
+
+### Regras de atualização (a comparar experimentalmente)
+
+1. **Por neurônio**: quando um neurônio dispara (condição de disparo definida à parte), suas conexões de entrada são candidatas à atualização com base no valor absoluto de seus contadores individuais.
+2. **Por camada (Top-K)**: quando a camada atinge sua condição de atualização, seleciona-se o subconjunto das `K` conexões com maior `|C_ij|` na camada inteira, e só essas são atualizadas.
+3. **Por rede (Top-K por camada)**: a cada evento de atualização, seleciona-se `K` conexões por camada, totalizando `N × K` atualizações simultâneas na rede (`N` = número de camadas).
+
+### Política de zeragem dos contadores (a comparar)
+
+- Zerar somente os contadores das conexões atualizadas (**error-feedback**: o resíduo não usado continua acumulando) — hipótese principal, sustentada por resultados conhecidos de compressão de gradiente Top-K (Deep Gradient Compression; Error Feedback for SignSGD), que mostram que descartar o resíduo não-selecionado prejudica a convergência.
+- Zerar todos os contadores da camada/rede após cada atualização.
+- Normalizar os contadores restantes.
+
+### Fluxo geral
+
+```
+Forward → erro → fake gradient (quantizado) → δ propagado camada a camada
+→ acumulação nos contadores por conexão → regra de seleção (1, 2 ou 3)
+→ atualização discreta do peso (W ∈ {−1,0,+1}) → política de zeragem/reset
+```
+
+A unidade fundamental de aprendizado é a **conexão individual** (seu contador); o neurônio e a camada só fornecem o *contexto* que decide quando e quais conexões atualizar.
+
+---
+
+## Parte 2 — Proposta de redes a implementar em MNIST
+
+O objetivo desta primeira rodada é uma **comparação qualitativa**: entender se a técnica proposta aprende algo de real (não apenas "funciona em XOR"), como ela se comporta durante o treino, e onde ela diverge do padrão vigente — não ainda produzir um benchmark quantitativo definitivo.
+
+### Rede A — Baseline (técnica vigente)
+
+Referência padrão-ouro, sem nenhuma restrição de discretização, para servir de vara de medir.
+
+| Aspecto | Especificação |
+|---|---|
+| Arquitetura | MLP simples: `784 → 128 → 64 → 10` |
+| Pesos | float32, inicialização padrão (He/Xavier) |
+| Ativação (camadas ocultas) | ReLU |
+| Saída | softmax + cross-entropy |
+| Otimizador | SGD ou Adam, taxa de aprendizado padrão |
+| Treinamento | backpropagation clássico, mini-batches |
+| Papel no experimento | baseline de referência — acurácia, curva de convergência e uso de memória "de mercado" |
+
+### Rede B — Técnica proposta (pesos ternários + contadores)
+
+Mesma topologia (`784 → 128 → 64 → 10`) para manter a comparação justa em capacidade nominal — só a forma de representar e atualizar os pesos muda.
+
+| Aspecto | Especificação |
+|---|---|
+| Arquitetura | idêntica à Rede A: `784 → 128 → 64 → 10` |
+| Pesos | ternários `{−1, 0, +1}`, sem peso latente |
+| Bias | inteiro, `b ∈ [−N, N−1]` por camada |
+| Ativação | degrau centrado em zero |
+| Erro | mesma função de perda conceitual da Rede A (adaptada a saída discreta — ex. contagem de acerto/erro por classe, ou soma de erro absoluto por neurônio de saída) |
+| Fake gradient | triangular centrado em zero, quantizado para inteiros pequenos |
+| Propagação | δ por camada, regra da cadeia discreta (ver Parte 1) |
+| Contadores | um `C_ij` inteiro por conexão (peso) e um por bias |
+| Atualização | três variantes a testar isoladamente: **B1** (por neurônio), **B2** (por camada Top-K), **B3** (por rede Top-K) |
+| Reset de contador | três políticas a testar isoladamente dentro de cada variante: zerar só atualizados / zerar tudo / normalizar |
+
+Isso dá **3 (regra de atualização) × 3 (política de reset) = 9 configurações** da Rede B a explorar — não é necessário rodar todas com o mesmo rigor; a ideia é fazer uma varredura qualitativa e identificar quais combinações sequer aprendem, antes de investir em comparação fina.
+
+### O que observar (comparação qualitativa Rede A vs. Rede B)
+
+- **Curva de erro/acurácia ao longo do treino** — a Rede B converge de forma suave (como A) ou "em degraus" com platôs, como vimos no experimento de busca em coordenadas do XOR?
+- **Fração de pesos que efetivamente mudam de estado** ao longo do treino (esperado: bem menor que 100% por passo, dado o Top-K e a natureza discreta).
+- **Estabilidade da propagação do δ em profundidade** — verificar se o sinal chega às primeiras camadas sem colapsar a zero ou saturar, o equivalente discreto do problema de gradiente desaparecendo/explodindo.
+- **Comparação entre B1/B2/B3** — qual regra de seleção aprende mais rápido, qual generaliza melhor no conjunto de teste.
+- **Comparação entre políticas de reset dentro de cada variante** — confirmar (ou refutar) a hipótese de que preservar o resíduo (error-feedback) supera zerar tudo.
+- **Custo de memória** — bits por peso (ternário ≈ 1.58 bit teórico vs. 32 bits float) e se a acurácia perdida (se houver) compensa essa economia.
+
+### Ordem de implementação sugerida
+
+1. Rede A treinada e validada primeiro, como referência fixa de acurácia/curva de convergência.
+2. Rede B com uma única configuração inicial (ex.: B1 + reset "zera só atualizados") para validar que o mecanismo básico aprende algo em MNIST (não só em XOR).
+3. Expandir para as demais 8 configurações somente depois que a configuração inicial mostrar sinal de aprendizado real.
+4. Comparação final qualitativa (gráficos de curva de treino lado a lado, não necessariamente testes estatísticos formais nessa fase).
+
+---
+
+## Estrutura do projeto
+
+```
+ideia/
+├── README.md              ← este arquivo
+├── AGENTS.md              ← convenções para agentes de IA neste repositório
+├── .tasks/
+│   └── task.md            ← padrão de escrita de tasks
+├── .tasks/
+│   ├── 001-baseline-mlp.md
+│   ├── 002-ternary-counter-impl.md
+│   └── ...
+├── src/
+│   ├── baseline.py        ← Rede A (MLP float32 + backprop)
+│   ├── ternary_net.py     ← Rede B (pesos ternários + contadores)
+│   ├── counter_rules.py   ← Regras de atualização (B1, B2, B3)
+│   ├── reset_policies.py  ← Políticas de zeragem de contadores
+│   ├── fake_gradient.py   ← Função fake gradient triangular + quantização
+│   └── utils.py           ← Utilitários (MNIST loader, plotting, etc.)
+├── experiments/
+│   └── ...                ← scripts de execução de cada configuração
+└── results/
+    └── ...                ← gráficos, logs, métricas
+```
+
+## Dependências
+
+- Python 3.10+
+- PyTorch (baseline e utilitários)
+- NumPy
+- Matplotlib (plotting)
+- scikit-learn (métricas)
+
+## Licença
+
+Este repositório é dedicado à pesquisa e experimentação acadêmica.
