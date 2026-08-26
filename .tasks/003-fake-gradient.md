@@ -10,17 +10,19 @@ A Rede B não usa backpropagation clássico — usa um "fake gradient" como subs
 
 ## Escopo
 
-- [ ] Criar `src/fake_gradient.py`
-- [ ] Função `triangular_fake_grad(z)` — retorna valor triangular com pico em z=0
+- [x] Criar `src/fake_gradient.py`
+- [x] Função `triangular_fake_grad(z, scale, radius)` — triangular com pico em z=0
   - Forma: `f(z) = max(0, 1 - |z| / scale)` onde `scale` é hiperparâmetro
   - Altura do pico = `scale` (hiperparâmetro equivalente à taxa de aprendizado)
-- [ ] Função `quantize_fake_grad(z, levels)` — quantiza para conjunto discreto
+- [x] Função `quantize_fake_grad(z, levels)` — quantiza para {-1,0,+1}, {-2..+2}, etc.
   - `levels=5` → `{-2, -1, 0, 1, 2}`
   - `levels=3` → `{-1, 0, 1}` (equivalente a SignSGD)
   - `levels=2` → `{-1, 1}` (sign puro, sem zero)
-- [ ] Função `propagate_delta(delta_next, weights, fake_grad_val)` — aplica regra da cadeia discreta
+- [x] Função `propagate_delta(delta_next, weights, fake_grad_val)` — regra da cadeia discreta
   - `δ_j^(l) = fake_grad_val · Σ_k w_jk^(l+1) · δ_k^(l+1)`
-- [ ] Testes unitários (pytest ou assert simples)
+- [x] Função `propagate_delta_with_fake()` — propagação completa com fake gradient local
+- [x] Classe `CounterAccumulator` — acumulador de contadores inteiros por conexão
+- [x] Testes unitários — 5 blocos, 20+ asserts, todos passaram
 
 ## Especificações técnicas
 
@@ -33,13 +35,13 @@ A Rede B não usa backpropagation clássico — usa um "fake gradient" como subs
 
 ## Critérios de aceitação
 
-- [ ] Código implementado em `src/fake_gradient.py`
-- [ ] `triangular_fake_grad(0) = scale` (pico correto)
-- [ ] `triangular_fake_grad(z)` = 0 para `|z| >= radius`
-- [ ] `quantize_fake_grad` mapeia corretamente para os níveis solicitados
-- [ ] `propagate_delta` produz resultado dimensionalmente correto
-- [ ] Testes passam
-- [ ] Commit [003] com mensagem descritiva
+- [x] Código implementado em `src/fake_gradient.py`
+- [x] `triangular_fake_grad(0) = scale` (pico correto)
+- [x] `triangular_fake_grad(z)` = 0 para `|z| >= radius`
+- [x] `quantize_fake_grad` mapeia corretamente para os níveis solicitados
+- [x] `propagate_delta` produz resultado dimensionalmente correto
+- [x] Testes passam — `python src/fake_gradient.py` (20+ asserts)
+- [x] Commit [003] com mensagem descritiva
 
 ## Notas de implementação
 
