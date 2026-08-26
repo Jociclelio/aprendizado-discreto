@@ -10,12 +10,14 @@ Tanto a baseline quanto a Rede B precisam de MNIST, plotting, e salvamento de re
 
 ## Escopo
 
-- [ ] Criar `src/utils.py`
-- [ ] Função `load_mnist()` — retorna train_data, train_labels, test_data, test_labels como numpy arrays (normalizados [0,1])
-- [ ] Função `plot_accuracy_curve(epochs, train_acc, test_acc, title, save_path)` — gera gráfico lado a lado treino/teste
-- [ ] Função `save_metrics(metrics_dict, save_path)` — salva JSON com métricas do experimento
-- [ ] Função `count_ternary_weights(model)` — helper para contar pesos em {-1,0,+1} (útil para a Rede B)
-- [ ] Testar com `python -c "from src.utils import load_mnist; ..."`
+- [x] Criar `src/utils.py`
+- [x] Função `load_mnist()` — retorna train_data, train_labels, test_data, test_labels como numpy arrays (normalizados)
+- [x] Função `plot_accuracy_curve(epochs, train_acc, test_acc, title, save_path)` — gera gráfico treino/teste
+- [x] Função `save_metrics(metrics_dict, save_path)` — salva JSON com métricas do experimento
+- [x] Função `count_ternary_weights(model)` — helper para contar pesos em {-1,0,+1}
+- [x] Função `plot_comparison_curves()` — múltiplas curvas lado a lado
+- [x] Funções auxiliares: `load_metrics()`, `count_nonzero_weights()`, `set_seed()`, `ensure_dir()`, `format_number()`
+- [x] Testar com `python src/utils.py` — todos os testes passaram
 
 ## Especificações técnicas
 
@@ -26,12 +28,12 @@ Tanto a baseline quanto a Rede B precisam de MNIST, plotting, e salvamento de re
 
 ## Critérios de aceitação
 
-- [ ] Código implementado em `src/utils.py`
-- [ ] `load_mnist()` retorna arrays corretos (train: 60k, test: 10k)
-- [ ] `plot_accuracy_curve()` gera PNG funcional
-- [ ] `save_metrics()` salva JSON válido
-- [ ] Executa sem erro
-- [ ] Commit [002] com mensagem descritiva
+- [x] Código implementado em `src/utils.py`
+- [x] `load_mnist()` retorna arrays corretos (train: 60k, test: 10k)
+- [x] `plot_accuracy_curve()` gera PNG funcional
+- [x] `save_metrics()` salva JSON válido
+- [x] Executa sem erro — `python src/utils.py` passa todos os testes
+- [x] Commit [002] com mensagem descritiva
 
 ## Notas de implementação
 
