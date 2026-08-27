@@ -13,17 +13,17 @@ A hipótese principal é que preservar o resíduo (error-feedback) supera zerar 
 
 ## Escopo
 
-- [ ] Criar `src/reset_policies.py`
-- [ ] Função `reset_error_feedback(counters, updated_indices)` — B
+- [x] Criar `src/reset_policies.py`
+- [x] Função `reset_error_feedback(counters, row_indices, col_indices)` — B
   - Zera contadores apenas nas posições de `updated_indices`
   - Contadores não-atualizados mantêm seu valor (resíduo preservado)
-- [ ] Função `reset_full(counters)` — B
+- [x] Função `reset_full(counters)` — B
   - Zera todos os contadores da camada
-- [ ] Função `reset_normalize(counters, updated_indices)` — B
+- [x] Função `reset_normalize(counters, row_indices, col_indices)` — B
   - Zera contadores atualizados
   - Escala contadores restantes por fator `mean(|C_non_updated|) / target_scale`
   - `target_scale` = hiperparâmetro (sugerir: 1.0 ou magnitude inicial)
-- [ ] Classe `ResetPolicy` — factory/enum para selecionar política
+- [x] Classe `ResetPolicy` — factory/enum para selecionar política
   - `apply(policy_name, counters, updated_indices)`
   - `policy_name ∈ {"error_feedback", "full_reset", "normalize"}`
 
@@ -40,13 +40,13 @@ A hipótese principal é que preservar o resíduo (error-feedback) supera zerar 
 
 ## Critérios de aceitação
 
-- [ ] Código implementado em `src/reset_policies.py`
-- [ ] `reset_error_feedback()` zera apenas índices fornecidos
-- [ ] `reset_full()` zera todos os contadores
-- [ ] `reset_normalize()` escala corretamente os não-atualizados
-- [ ] `ResetPolicy.apply()` roteia corretamente para cada política
-- [ ] Testes unitários
-- [ ] Commit [006] com mensagem descritiva
+- [x] Código implementado em `src/reset_policies.py`
+- [x] `reset_error_feedback()` zera apenas índices fornecidos
+- [x] `reset_full()` zera todos os contadores
+- [x] `reset_normalize()` escala corretamente os não-atualizados
+- [x] `ResetPolicy.apply()` roteia corretamente para cada política
+- [x] Testes unitários — 9 blocos, 20+ asserts
+- [x] Commit [006] com mensagem descritiva
 
 ## Notas de implementação
 
