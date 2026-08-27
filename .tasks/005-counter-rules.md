@@ -13,20 +13,20 @@ A unidade fundamental de aprendizado é a **conexão individual** (seu contador)
 
 ## Escopo
 
-- [ ] Criar `src/counter_rules.py`
-- [ ] Classe `CounterManager` — gerencia contadores por camada
+- [x] Criar `src/counter_rules.py`
+- [x] Classe `CounterManager` — gerencia contadores por camada
   - `C_ij` inteiro por conexão (peso) + por bias
   - Métodos: `accumulate(layer_idx, delta, input)`, `get_top_k(layer_idx, k)`, `get_neuron_counters(layer_idx, neuron_idx)`
-- [ ] Função `apply_update_neuron(layer, counters, neuron_idx, delta_sign)` — B1
+- [x] Função `apply_update_neuron(layer, counters, layer_idx, neuron_idx, delta_sign)` — B1
   - Quando neurônio dispara, atualizar todas as suas conexões de entrada baseadas nos contadores individuais
   - Regra: se `|C_ij| > threshold`, atualizar `W_ij` na direção de `sign(C_ij)`
-- [ ] Função `apply_update_layer_topk(layer, counters, k)` — B2
+- [x] Função `apply_update_layer_topk(layer, counters, layer_idx, k)` — B2
   - Selecionar K conexões com maior `|C_ij|` na camada inteira
   - Atualizar apenas essas K conexões
-- [ ] Função `apply_update_network_topk(layers, counters_list, k_per_layer)` — B3
+- [x] Função `apply_update_network_topk(net, counters, k_per_layer)` — B3
   - Aplicar Top-K em cada camada simultaneamente
   - Total: `N_layers × K` atualizações por evento
-- [ ] Função `update_weight(W, sign)` — aplica uma unidade de mudança: `W += sign` (com clip em {−1, 0, +1})
+- [x] Função `update_weight(W, sign)` — aplica uma unidade de mudança: `W += sign` (com clip em {−1, 0, +1})
 
 ## Especificações técnicas
 
@@ -38,14 +38,14 @@ A unidade fundamental de aprendizado é a **conexão individual** (seu contador)
 
 ## Critérios de aceitação
 
-- [ ] Código implementado em `src/counter_rules.py`
-- [ ] `CounterManager.accumulate()` incrementa corretamente os contadores
-- [ ] `get_top_k()` retorna os índices das K maiores conexões
-- [ ] `apply_update_neuron()` atualiza conexões do neurônio especificado
-- [ ] `apply_update_layer_topk()` atualiza apenas K conexões da camada
-- [ ] `apply_update_network_topk()` atualiza K conexões em cada camada
-- [ ] Testes unitários para cada regra
-- [ ] Commit [005] com mensagem descritiva
+- [x] Código implementado em `src/counter_rules.py`
+- [x] `CounterManager.accumulate()` incrementa corretamente os contadores
+- [x] `get_top_k_weights()` retorna os índices das K maiores conexões
+- [x] `apply_update_neuron()` atualiza conexões do neurônio especificado
+- [x] `apply_update_layer_topk()` atualiza apenas K conexões da camada
+- [x] `apply_update_network_topk()` atualiza K conexões em cada camada
+- [x] Testes unitários para cada regra — 8 blocos, 25+ asserts
+- [x] Commit [005] com mensagem descritiva
 
 ## Notas de implementação
 
