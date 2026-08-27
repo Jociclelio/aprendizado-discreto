@@ -154,6 +154,8 @@ class CounterManager:
             row_indices: índices das linhas a zerar.
             col_indices: índices das colunas a zerar.
         """
+        row_indices = np.asarray(row_indices, dtype=np.int64)
+        col_indices = np.asarray(col_indices, dtype=np.int64)
         self.weight_counters[layer_idx][row_indices, col_indices] = 0
 
     def reset_all(self) -> None:
