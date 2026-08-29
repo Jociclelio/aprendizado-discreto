@@ -56,17 +56,36 @@ class CounterManager:
 
     Cada conexão (peso) tem um contador C_ij que acumula evidências
     de que deve ser atualizada.
+
+    Suporta decaimento temporal (leaky) — task 011:
+        C^{(t+1)} = floor(gamma * C^{(t)}) + Delta
+        ou bitshift: C - (C >> shift) + Delta  (gamma = 1 - 2^-shift)
     """
 
-    def __init__(self, layer_shapes: List[Tuple[int, int]]):
+    def __init__(self, layer_shapes: List[Tuple[int, int]],
+                 decay_rate: Optional[float] = None,
+                 decay_shift: Optional[int] = None):
         """
         Inicializa contadores para todas as camadas.
 
         Args:
             layer_shapes: lista de (output_dim, input_dim) por camada.
+            decay_rate: fator gamma em (0,1) para decaimento multiplicativo.
+                        Ex.: 0.99, 0.95, 0.90. Se None, sem decaimento.
+            decay_shift: alternativa bitshift (int 3..5). Se setado, usa
+                         C - (C >> shift) em vez de gamma. Mais eficiente em HW.
         """
+        if decay_rate is not None and decay_shift is not None:
+            raise ValueError("Use apenas um: decay_rate ou decay_shift, não ambos")
+        if decay_rate is not None and not (0.0 < decay_rate < 1.0):
+            raise ValueError(f"decay_rate deve estar em (0,1), got {decay_rate}")
+        if decay_shift is not None and decay_shift not in (1, 2, 3, 4, 5, 6, 7, 8):
+            raise ValueError(f"decay_shift deve estar em 1..8, got {decay_shift}")
+
         self.num_layers = len(layer_shapes)
         self.layer_shapes = layer_shapes
+        self.decay_rate = decay_rate
+        self.decay_shift = decay_shift
 
         # Contadores de pesos: (output_dim, input_dim) por camada
         self.weight_counters: List[np.ndarray] = []
@@ -78,8 +97,37 @@ class CounterManager:
         for shape in layer_shapes:
             self.bias_counters.append(np.zeros(shape[0], dtype=np.int64))
 
+    def _apply_decay_array(self, arr: np.ndarray) -> np.ndarray:
+        """Aplica decaimento a um array de contadores (in-place logic)."""
+        if self.decay_rate is None and self.decay_shift is None:
+            return arr
+        if self.decay_shift is not None:
+            # Bitshift: C - (C >> shift)  -> gamma = 1 - 2^-shift
+            # Para negativos, >> é aritmético (floor), correto para decaimento simétrico
+            return arr - (arr >> self.decay_shift)
+        # decay_rate: floor(gamma * C)
+        # np.floor lida corretamente com negativos (ex: floor(-0.9)= -1)
+        return np.floor(self.decay_rate * arr).astype(np.int64, casting="unsafe")
+
+    def decay(self, layer_idx: Optional[int] = None) -> None:
+        """
+        Aplica decaimento temporal aos contadores.
+
+        C <- floor(gamma*C)  ou  C <- C - (C >> shift)
+
+        Args:
+            layer_idx: se None, aplica a todas as camadas; senão só à camada indicada.
+        """
+        if self.decay_rate is None and self.decay_shift is None:
+            return
+        indices = [layer_idx] if layer_idx is not None else range(self.num_layers)
+        for i in indices:
+            self.weight_counters[i] = self._apply_decay_array(self.weight_counters[i])
+            self.bias_counters[i] = self._apply_decay_array(self.bias_counters[i])
+
     def accumulate(self, layer_idx: int, delta_weights: np.ndarray,
-                   delta_biases: Optional[np.ndarray] = None) -> None:
+                   delta_biases: Optional[np.ndarray] = None,
+                   apply_decay: bool = False) -> None:
         """
         Acumula deltas nos contadores de uma camada.
 
@@ -87,7 +135,14 @@ class CounterManager:
             layer_idx: índice da camada (0-based).
             delta_weights: incremento por conexão, shape (output_dim, input_dim).
             delta_biases: incremento por neurônio, shape (output_dim,).
+            apply_decay: se True, aplica decaimento antes de somar Delta
+                         (C = decay(C) + Delta). Útil para leak por amostra.
+                         Se False, decaimento deve ser chamado explicitamente via decay().
         """
+        if apply_decay and (self.decay_rate is not None or self.decay_shift is not None):
+            self.weight_counters[layer_idx] = self._apply_decay_array(self.weight_counters[layer_idx])
+            self.bias_counters[layer_idx] = self._apply_decay_array(self.bias_counters[layer_idx])
+
         self.weight_counters[layer_idx] += delta_weights.astype(np.int64, casting="unsafe")
         if delta_biases is not None:
             self.bias_counters[layer_idx] += delta_biases.astype(np.int64, casting="unsafe")
@@ -163,6 +218,16 @@ class CounterManager:
         for i in range(self.num_layers):
             self.weight_counters[i].fill(0)
             self.bias_counters[i].fill(0)
+
+    def weight_flip_rate(self, prev_weights: List[np.ndarray],
+                         curr_weights: List[np.ndarray]) -> float:
+        """
+        Calcula fração de pesos que trocaram de valor entre dois snapshots.
+        Útil para medir oscilação/estabilidade (task 011 critério).
+        """
+        total = sum(p.size for p in prev_weights)
+        flips = sum(int(np.sum(p != c)) for p, c in zip(prev_weights, curr_weights))
+        return flips / total if total > 0 else 0.0
 
     def get_all_stats(self) -> dict:
         """Retorna estatísticas de todas as camadas."""

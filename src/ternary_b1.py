@@ -67,6 +67,9 @@ DEFAULT_HYPERPARAMS = {
     "radius": 1.0,        # fake gradient base width (None = adaptativo)
     "scale_factor": 1.0,  # c para radius adaptativo: radius_l = c * sqrt(fan_in)
     "adaptive_radius": True,  # se True usa radius por camada = c*sqrt(fan_in)
+    "decay_rate": None,   # gamma em (0,1) para leaky, ou None
+    "decay_shift": None,  # shift 3/4/5 para bitshift, ou None (011)
+    "decay_per_batch": True,  # se True aplica decay a cada batch
     "levels": 5,          # quantization levels {-2,-1,0,+1,+2}
     "batch_size": 32,     # samples per batch
     "epochs": 20,         # training epochs
@@ -264,6 +267,7 @@ def train_batch(
     levels: int = 5,
     adaptive_radius: bool = False,
     scale_factor: float = 1.0,
+    decay_per_batch: bool = False,
 ) -> Dict:
     """
     Treina um mini-batch com regra B1 + error-feedback.
@@ -280,6 +284,10 @@ def train_batch(
     Returns:
         Dict com métricas do batch.
     """
+    # Decaimento temporal leaky (011): aplica uma vez por batch antes das amostras
+    if decay_per_batch and (cm.decay_rate is not None or cm.decay_shift is not None):
+        cm.decay()
+
     batch_size = batch_x.shape[0]
     total_loss = 0.0
     total_fired = 0
@@ -363,6 +371,9 @@ def train_b1(
     exp_name: str = "exp-007-b1-error-feedback",
     adaptive_radius: bool = False,
     scale_factor: float = 1.0,
+    decay_rate: Optional[float] = None,
+    decay_shift: Optional[int] = None,
+    decay_per_batch: bool = True,
 ) -> Tuple[TernaryNet, Dict]:
     """
     Treina a Rede B com regra B1 + error-feedback.
@@ -386,11 +397,11 @@ def train_b1(
     train_data, train_labels, test_data, test_labels = load_mnist(normalize=True)
     print(f"  Train: {train_data.shape}, Test: {test_data.shape}")
 
-    # Inicializar rede e contadores
+    # Inicializar rede e contadores (com leaky se configurado)
     net = TernaryNet(seed=seed)
     cm = CounterManager([
         (128, 784), (64, 128), (10, 64)
-    ])
+    ], decay_rate=decay_rate, decay_shift=decay_shift)
 
     if adaptive_radius:
         layer_radii = get_layer_radii([784, 128, 64], scale_factor=scale_factor)
@@ -416,6 +427,9 @@ def train_b1(
             "radius": radius,
             "adaptive_radius": adaptive_radius,
             "scale_factor": scale_factor,
+            "decay_rate": decay_rate,
+            "decay_shift": decay_shift,
+            "decay_per_batch": decay_per_batch,
             "levels": levels,
             "batch_size": batch_size,
             "epochs": epochs,
@@ -448,6 +462,7 @@ def train_b1(
                 net, cm, batch_x, batch_y,
                 scale=scale, radius=radius, levels=levels,
                 adaptive_radius=adaptive_radius, scale_factor=scale_factor,
+                decay_per_batch=decay_per_batch,
             )
             epoch_loss += batch_metrics["loss"]
             epoch_fired += batch_metrics["fired_neurons"]
