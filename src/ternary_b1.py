@@ -47,6 +47,8 @@ from src.fake_gradient import (
     triangular_fake_grad,
     quantize_fake_grad,
     propagate_delta_with_fake,
+    get_adaptive_radius,
+    get_layer_radii,
 )
 from src.utils import (
     load_mnist,
@@ -62,7 +64,9 @@ from src.utils import (
 # ---------------------------------------------------------------------------
 DEFAULT_HYPERPARAMS = {
     "scale": 1.0,         # fake gradient amplitude
-    "radius": 1.0,        # fake gradient base width
+    "radius": 1.0,        # fake gradient base width (None = adaptativo)
+    "scale_factor": 1.0,  # c para radius adaptativo: radius_l = c * sqrt(fan_in)
+    "adaptive_radius": True,  # se True usa radius por camada = c*sqrt(fan_in)
     "levels": 5,          # quantization levels {-2,-1,0,+1,+2}
     "batch_size": 32,     # samples per batch
     "epochs": 20,         # training epochs
@@ -82,6 +86,8 @@ def train_sample_online(
     scale: float = 1.0,
     radius: float = 1.0,
     levels: int = 5,
+    adaptive_radius: bool = False,
+    scale_factor: float = 1.0,
 ) -> Dict:
     """
     Treina uma única amostra com regra B1 + error-feedback.
@@ -120,13 +126,20 @@ def train_sample_online(
     one_hot = np.zeros((batch_size, net.output_dim), dtype=np.float32)
     one_hot[0, target] = 1.0
 
+    # Helpers de raio
+    def _radius_for(layer_input_dim: int) -> float:
+        if adaptive_radius:
+            return get_adaptive_radius(layer_input_dim, scale_factor)
+        return radius
+
     # 3. Erro e fake gradient na saída
     error = out - one_hot  # (1, 10)
     loss = np.mean(np.abs(error))
 
     # Fake gradient triangular na saída
     z_output = pre_activations[-1]  # (1, 10)
-    fake_grad_output = triangular_fake_grad(z_output, scale=scale, radius=radius)
+    r_out = _radius_for(net.layers[2].input_dim)
+    fake_grad_output = triangular_fake_grad(z_output, scale=scale, radius=r_out)
     # Quantiza
     q_fake_grad = quantize_fake_grad(fake_grad_output, levels=levels)
 
@@ -140,17 +153,19 @@ def train_sample_online(
 
     # Propaga δ para camada 1 (hidden2) — usa pesos da camada 2 (saída)
     # net.layers[2].weights é (10, 64), propagate_delta espera (current, next)
+    r1 = _radius_for(net.layers[1].input_dim)
     delta = propagate_delta_with_fake(
         delta, net.layers[2].weights.T, pre_activations[-2],
-        scale=scale, radius=radius
+        scale=scale, radius=r1
     )
     delta_w1 = delta.T @ activations[-3]  # (64, 128)
     cm.accumulate(1, delta_w1.astype(np.int64))
 
     # Propaga δ para camada 0 (hidden1) — usa pesos da camada 1 (hidden2)
+    r0 = _radius_for(net.layers[0].input_dim)
     delta = propagate_delta_with_fake(
         delta, net.layers[1].weights.T, pre_activations[-3],
-        scale=scale, radius=radius
+        scale=scale, radius=r0
     )
     delta_w0 = delta.T @ activations[-4]  # (128, 784)
     cm.accumulate(0, delta_w0.astype(np.int64))
@@ -247,6 +262,8 @@ def train_batch(
     scale: float = 1.0,
     radius: float = 1.0,
     levels: int = 5,
+    adaptive_radius: bool = False,
+    scale_factor: float = 1.0,
 ) -> Dict:
     """
     Treina um mini-batch com regra B1 + error-feedback.
@@ -273,6 +290,7 @@ def train_batch(
         sample_metrics = train_sample_online(
             net, cm, batch_x[i], int(batch_targets[i]),
             scale=scale, radius=radius, levels=levels,
+            adaptive_radius=adaptive_radius, scale_factor=scale_factor,
         )
         total_loss += sample_metrics["loss"]
         total_fired += sample_metrics["fired_neurons"]
@@ -343,6 +361,8 @@ def train_b1(
     levels: int = 5,
     seed: int = 42,
     exp_name: str = "exp-007-b1-error-feedback",
+    adaptive_radius: bool = False,
+    scale_factor: float = 1.0,
 ) -> Tuple[TernaryNet, Dict]:
     """
     Treina a Rede B com regra B1 + error-feedback.
@@ -372,12 +392,21 @@ def train_b1(
         (128, 784), (64, 128), (10, 64)
     ])
 
-    print(f"\n{'='*60}")
-    print(f"Treino B1 + error-feedback")
-    print(f"  Architecture: {net.get_stats()['architecture']}")
-    print(f"  Hyperparams: scale={scale}, radius={radius}, levels={levels}")
-    print(f"  Batch size: {batch_size}, Epochs: {epochs}")
-    print(f"{'='*60}\n")
+    if adaptive_radius:
+        layer_radii = get_layer_radii([784, 128, 64], scale_factor=scale_factor)
+        print(f"\n{'='*60}")
+        print(f"Treino B1 + error-feedback (ADAPTIVE radius c={scale_factor} → {layer_radii})")
+        print(f"  Architecture: {net.get_stats()['architecture']}")
+        print(f"  Hyperparams: scale={scale}, adaptive_radius={adaptive_radius}, scale_factor={scale_factor}, levels={levels}")
+        print(f"  Batch size: {batch_size}, Epochs: {epochs}")
+        print(f"{'='*60}\n")
+    else:
+        print(f"\n{'='*60}")
+        print(f"Treino B1 + error-feedback")
+        print(f"  Architecture: {net.get_stats()['architecture']}")
+        print(f"  Hyperparams: scale={scale}, radius={radius}, levels={levels}")
+        print(f"  Batch size: {batch_size}, Epochs: {epochs}")
+        print(f"{'='*60}\n")
 
     # Métricas
     metrics = {
@@ -385,6 +414,8 @@ def train_b1(
         "hyperparams": {
             "scale": scale,
             "radius": radius,
+            "adaptive_radius": adaptive_radius,
+            "scale_factor": scale_factor,
             "levels": levels,
             "batch_size": batch_size,
             "epochs": epochs,
@@ -416,6 +447,7 @@ def train_b1(
             batch_metrics = train_batch(
                 net, cm, batch_x, batch_y,
                 scale=scale, radius=radius, levels=levels,
+                adaptive_radius=adaptive_radius, scale_factor=scale_factor,
             )
             epoch_loss += batch_metrics["loss"]
             epoch_fired += batch_metrics["fired_neurons"]

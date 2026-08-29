@@ -117,13 +117,18 @@ ideia/
 │   ├── 006-reset-policies.md
 │   ├── 007-b1-initial.md
 │   ├── 008-b2-b3-variants.md
-│   └── 009-comparison.md
+│   ├── 009-comparison.md
+│   ├── 010-adaptive-radius-and-data-normalization.md
+│   ├── 011-leaky-counters-momentum.md
+│   ├── 012-margin-loss-and-homeostasis.md
+│   └── 013-refined-comparison-and-benchmarks.md
 ├── src/
 │   ├── baseline.py        ← Rede A (MLP float32 + backprop)
 │   ├── ternary_net.py     ← Rede B (pesos ternários + contadores)
 │   ├── ternary_b1.py      ← B1: por neurônio + error-feedback
 │   ├── ternary_b2.py      ← B2: por camada Top-K
 │   ├── ternary_b3.py      ← B3: por rede Top-K
+│   ├── ternary_refined.py ← Rede B refinada (raio adaptativo + leaky + margin + homeostase)
 │   ├── counter_rules.py   ← Regras de atualização (B1, B2, B3)
 │   ├── reset_policies.py  ← Políticas de zeragem de contadores
 │   ├── fake_gradient.py   ← Função fake gradient triangular + quantização
@@ -147,7 +152,11 @@ ideia/
 | 006 | `006-reset-policies.md` | Políticas de reset: error-feedback, full, normalize | 007, 008 |
 | 007 | `007-b1-initial.md` | B1 + error-feedback — valida aprendizado em MNIST | 008 |
 | 008 | `008-b2-b3-variants.md` | B2 e B3 × 3 políticas de reset (6 configs) | 009 |
-| 009 | `009-comparison.md` | Comparação qualitativa final: A vs. todas as B | — |
+| 009 | `009-comparison.md` | Comparação qualitativa final: A vs. todas as B originais | 010 |
+| 010 | `010-adaptive-radius-and-data-normalization.md` | Normalização de dados e fake gradient adaptativo ao fan-in | 011 |
+| 011 | `011-leaky-counters-momentum.md` | Contadores com decaimento temporal (leaky momentum) | 012 |
+| 012 | `012-margin-loss-and-homeostasis.md` | Perda com margem multiclasse e homeostase de disparos | 013 |
+| 013 | `013-refined-comparison-and-benchmarks.md` | Benchmark comparativo: Baseline vs. Original vs. Refinada | — |
 
 ## Dependências
 
@@ -160,3 +169,4 @@ ideia/
 ## Licença
 
 Este repositório é dedicado à pesquisa e experimentação acadêmica.
+

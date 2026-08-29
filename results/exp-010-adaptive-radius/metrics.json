@@ -1,0 +1,45 @@
+{
+  "normalization": {
+    "train_max": 1.0,
+    "train_min": 0.0,
+    "validated": true
+  },
+  "adaptive_radii": {
+    "c0.5": {
+      "radii": [
+        14.0,
+        5.656854249492381,
+        4.0
+      ],
+      "frac_nonzero": [
+        0.9431953125,
+        0.61378125,
+        0.7273
+      ],
+      "all_gt_50": true
+    },
+    "c1.0": {
+      "radii": [
+        28.0,
+        11.313708498984761,
+        8.0
+      ],
+      "frac_nonzero": [
+        0.9995,
+        0.938578125,
+        0.9863
+      ],
+      "all_gt_50": true
+    }
+  },
+  "quick_train_acc": {
+    "fixed_r1": 0.1,
+    "adapt_c0.5": 0.089,
+    "adapt_c1.0": 0.099
+  },
+  "counters_sample": {
+    "fixed_max0": 1,
+    "adapt0.5_max0": 1,
+    "adapt1.0_max0": 1
+  }
+}

@@ -87,11 +87,12 @@ def load_mnist(
     test_data = test_data.reshape(test_data.shape[0], -1)
 
     if normalize:
-        # Se usou Normalize do torchvision, os dados já estão normalizados
-        # (média 0.1307, std 0.3081). Se quiser [0,1] puro, descomente:
-        # train_data /= 255.0
-        # test_data /= 255.0
-        pass
+        # Normalização estrita para [0, 1] — corrige bug onde
+        # train_dataset.data ignora o transform Normalize do torchvision.
+        # task 010: garante que z = W·x com W∈{-1,0,1} fique dentro do
+        # cone do fake gradient triangular.
+        train_data /= 255.0
+        test_data /= 255.0
 
     if return_tensors:
         train_data = torch.from_numpy(train_data)

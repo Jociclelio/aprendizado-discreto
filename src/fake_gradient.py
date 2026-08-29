@@ -190,6 +190,67 @@ def propagate_delta_with_fake(
 
 
 # ---------------------------------------------------------------------------
+# Raio adaptativo ao fan-in (task 010)
+# ---------------------------------------------------------------------------
+def get_adaptive_radius(input_dim: int, scale_factor: float = 1.0) -> float:
+    """
+    Calcula raio adaptativo proporcional a sqrt(fan-in).
+
+    radius_l = scale_factor * sqrt(input_dim_l)
+
+    A variância da soma de N variáveis independentes escala com sqrt(N).
+    Casar a base do triângulo com sqrt(N) mantém os neurônios dentro
+    do cone de aprendizado do fake gradient.
+
+    Args:
+        input_dim: fan-in da camada (número de entradas).
+        scale_factor: c em [0.5, 1.0], ajusta largura do cone.
+
+    Returns:
+        Raio adaptativo (float > 0).
+    """
+    return float(scale_factor * np.sqrt(input_dim))
+
+
+def get_layer_radii(layer_dims: List[int], scale_factor: float = 1.0) -> List[float]:
+    """
+    Retorna lista de raios adaptativos para cada camada.
+
+    Args:
+        layer_dims: lista de input_dim por camada, ex. [784, 128, 64].
+        scale_factor: fator c global.
+
+    Returns:
+        Lista de raios, um por camada.
+    """
+    return [get_adaptive_radius(d, scale_factor) for d in layer_dims]
+
+
+def adaptive_triangular_fake_grad(
+    z: np.ndarray,
+    input_dim: int,
+    scale: float = 1.0,
+    scale_factor: float = 1.0,
+) -> np.ndarray:
+    """
+    Fake gradient triangular com raio adaptativo ao fan-in.
+
+    Wrapper de triangular_fake_grad que calcula radius automaticamente.
+
+    Args:
+        z: ativações pré-degrau.
+        input_dim: fan-in da camada.
+        scale: altura do pico (lr discreto).
+        scale_factor: fator c para radius = c * sqrt(input_dim).
+
+    Returns:
+        Fake gradient com base adaptativa.
+    """
+    radius = get_adaptive_radius(input_dim, scale_factor)
+    return triangular_fake_grad(z, scale=scale, radius=radius)
+
+
+# ---------------------------------------------------------------------------
 # Acumulador de contadores (helper para Rede B)
 # ---------------------------------------------------------------------------
 class CounterAccumulator:
@@ -288,6 +349,22 @@ if __name__ == "__main__":
     print("=" * 60)
     print("Testes — fake_gradient.py")
     print("=" * 60)
+
+    # --- Teste 0: raio adaptativo (task 010) ---
+    print("\n[0] get_adaptive_radius / adaptive_triangular_fake_grad")
+    assert np.isclose(get_adaptive_radius(784, 1.0), 28.0), f"784→{get_adaptive_radius(784)}"
+    assert np.isclose(get_adaptive_radius(128, 1.0), np.sqrt(128)), "128"
+    assert np.isclose(get_adaptive_radius(64, 1.0), 8.0), "64"
+    assert np.isclose(get_adaptive_radius(784, 0.5), 14.0), "c=0.5"
+    radii = get_layer_radii([784, 128, 64], scale_factor=1.0)
+    assert len(radii) == 3 and np.isclose(radii[0], 28.0)
+    print(f"   ✓ radii [784,128,64] c=1.0 → {radii}")
+    # adaptive wrapper deve equivaler a triangular com radius calculado
+    z_tmp = np.array([0.0, 5.0, 30.0])
+    a = adaptive_triangular_fake_grad(z_tmp, input_dim=784, scale=1.0, scale_factor=1.0)
+    b = triangular_fake_grad(z_tmp, scale=1.0, radius=28.0)
+    assert np.allclose(a, b), "adaptive wrapper diverge"
+    print("   ✓ adaptive_triangular_fake_grad equivale a triangular com radius=28")
 
     # --- Teste 1: triangular_fake_grad ---
     print("\n[1] triangular_fake_grad")
