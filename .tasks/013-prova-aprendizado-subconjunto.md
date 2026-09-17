@@ -43,7 +43,7 @@ Esta task é a **Etapa 2** da sequência recomendada (relatório, seção 9).
 - [ ] Δacurácia sobre o subconjunto **positiva e acima do preditor majoritário** e da rede inicial.
 - [x] Métricas de diagnóstico (scores, confusão, atividade, surrogate/delta, transições) salvas em `results/exp-013-small-subset/`.
 - [x] Se falhar: relatório do ponto de falha escrito nesta task (o que se quer investigar em seguida).
-- [ ] Commit `[013]` com mensagem descritiva.
+- [x] Commit `[013]` com mensagem descritiva (`6f0e49d`).
 
 ## Notas de implementação
 
