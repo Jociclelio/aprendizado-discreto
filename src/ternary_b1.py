@@ -1,18 +1,44 @@
 """
 [007] Treino B1 — regra por neurônio + reset error-feedback
+[012] Reparo do contrato matemático (ver CONTRATO_012 abaixo).
 
 Integra `ternary_net.py`, `counter_rules.py`, `reset_policies.py`,
 `fake_gradient.py` e `utils.py` em um loop de treino completo para MNIST.
 
+CONTRATO_012 (convenção única para todas as camadas):
+    z_l = W_l @ x_{l-1} + b_l        (pré-ativação; W int8, b int32)
+    a_l = step(z_l), step(z)=1 se z>0 else 0   (ocultas em {0,1})
+    scores = z_out                   (pré-ativação da saída, ANTES do degrau)
+    pred = argmax(scores)            (evaluate consome scores)
+    C acumula GRADIENTE: delta_out = sign(a_out − target) * q_fake(z_out),
+        deltas ocultos por regra da cadeia com surrogate quantizado.
+    Atualização (descida):  W <- clip(W − sign(C), −1, +1),
+                            b <- clip(b − sign(C_b), −N, N−1).
+        Sem multiplicação extra por sign(−error) da amostra corrente;
+        cada camada usa seu próprio deltas[l] (C).
+    Seleção B1: máscara única por camada,
+        mask = |C| > max(1, mean(|C_cam|)), aplicada à atualização E ao
+        reset (error-feedback). Sem gate de disparo: neurônio inativo
+        pode se recuperar via evidência acumulada; `fired` é diagnóstico.
+    Saturação: tentativa em peso saturado (±1 pedindo mesmo sentido) é
+        BLOQUEADA (peso não muda) mas o contador é CONSUMIDO (resetado);
+        métricas separam selecionados/tentativas/bloqueios/transições.
+    Leak [012]: simétrico, zero ponto fixo —
+        gamma: sign(C)*floor(gamma*|C|);
+        shift: sign(C)*(|C|−step), step=max(1, |C|>>s) p/ |C|>0.
+    Quantização (H): surrogate quantizado também nas ocultas
+        (propagate_delta_with_fake_quantized) e acúmulo por
+        round(delta_float) — nunca truncamento direto.
+
 Fluxo por amostra:
-    1. Forward pass (step activation)
-    2. Cálculo de erro (L1 por neurônio de saída)
-    3. Fake gradient triangular quantizado
-    4. Propagação de δ camada a camada
-    5. Acumulação nos contadores
-    6. Seleção B1 (por neurônio disparado)
-    7. Atualização de pesos
-    8. Reset error-feedback
+    1. Forward único via forward_with_scores (scores + binárias)
+    2. Erro L1 por neurônio de saída
+    3. Fake gradient triangular quantizado (saída + ocultas)
+    4. Propagação de deltas[l] por camada (cada camada usa o seu)
+    5. Acumulação nos contadores (pesos E bias, com round)
+    6. Máscara única de seleção por camada
+    7. Atualização de pesos E bias (W−sign(C))
+    8. Reset error-feedback na MESMA máscara
 
 Uso:
     from src.ternary_b1 import train_b1
@@ -47,6 +73,7 @@ from src.fake_gradient import (
     triangular_fake_grad,
     quantize_fake_grad,
     propagate_delta_with_fake,
+    propagate_delta_with_fake_quantized,
     get_adaptive_radius,
     get_layer_radii,
 )
@@ -93,7 +120,9 @@ def train_sample_online(
     scale_factor: float = 1.0,
 ) -> Dict:
     """
-    Treina uma única amostra com regra B1 + error-feedback.
+    [012] Treina uma única amostra com regra B1 + error-feedback.
+
+    Contrato: ver docstring do módulo (CONTRATO_012).
 
     Args:
         net: TernaryNet.
@@ -105,152 +134,145 @@ def train_sample_online(
         levels: níveis de quantização.
 
     Returns:
-        Dict com métricas da amostra.
+        Dict com métricas da amostra (inclui selecionados/tentativas/
+        bloqueios/transições por pesos e bias, e sinal pré/pós-quant).
     """
-    input_dim = net.input_dim
-    metrics = {
-        "fired_neurons": 0,
-        "updated_weights": 0,
-        "total_updates": 0,
-    }
+    # 1. Forward ÚNICO (A): scores + binárias, degrau em TODAS as ocultas.
+    scores, a_out, pre_activations, activations = net.forward_with_scores(
+        x.reshape(1, -1).astype(np.float32)
+    )
+    # scores/a_out: (1, 10); activations: [x, a1, a2, a_out]; pre: [z1,z2,z3]
+    out = activations[-1]  # (1, 10) binária
 
-    # 1. Forward pass — garantir shape (1, dim) para cada camada
-    pre_activations = []  # z pré-degrau por camada
-    activations = [x.reshape(1, -1)]  # ativações por camada (input → hidden1 → hidden2 → output)
-    out = x.reshape(1, -1)
-    for layer in net.layers:
-        z = out @ layer.weights.T + layer.bias
-        pre_activations.append(z)
-        out = (z > 0).astype(np.float32)
-        activations.append(out)
-
-    # 2. One-hot target
-    batch_size = 1
-    one_hot = np.zeros((batch_size, net.output_dim), dtype=np.float32)
+    # 2. One-hot target + erro (gradiente do L1 médio a menos de constante)
+    one_hot = np.zeros((1, net.output_dim), dtype=np.float32)
     one_hot[0, target] = 1.0
+    error = out - one_hot  # (1, 10)
+    loss = float(np.mean(np.abs(error)))
 
-    # Helpers de raio
     def _radius_for(layer_input_dim: int) -> float:
         if adaptive_radius:
             return get_adaptive_radius(layer_input_dim, scale_factor)
         return radius
 
-    # 3. Erro e fake gradient na saída
-    error = out - one_hot  # (1, 10)
-    loss = np.mean(np.abs(error))
-
-    # Fake gradient triangular na saída
+    # 3. Fake gradient na saída (quantizado) → delta próprio da camada (C)
     z_output = pre_activations[-1]  # (1, 10)
     r_out = _radius_for(net.layers[2].input_dim)
     fake_grad_output = triangular_fake_grad(z_output, scale=scale, radius=r_out)
-    # Quantiza
     q_fake_grad = quantize_fake_grad(fake_grad_output, levels=levels)
+    deltas = [None, None, None]
+    deltas[2] = (np.sign(error) * q_fake_grad).astype(np.float64)  # (1, 10)
 
-    # 4. Propagação de δ
-    # δ na saída: gradiente da perda × fake gradient
-    delta = np.sign(error) * q_fake_grad  # (1, 10)
-
-    # Acumular contadores na camada de saída (layer 2)
-    delta_w = delta.T @ activations[-2]  # (10, 64)
-    cm.accumulate(2, delta_w.astype(np.int64))
-
-    # Propaga δ para camada 1 (hidden2) — usa pesos da camada 2 (saída)
-    # net.layers[2].weights é (10, 64), propagate_delta espera (current, next)
+    # 4. Propagação com surrogate QUANTIZADO (H); cada camada guarda o seu (C)
     r1 = _radius_for(net.layers[1].input_dim)
-    delta = propagate_delta_with_fake(
-        delta, net.layers[2].weights.T, pre_activations[-2],
-        scale=scale, radius=r1
+    deltas[1] = propagate_delta_with_fake_quantized(
+        deltas[2], net.layers[2].weights.T, pre_activations[-2],
+        scale=scale, radius=r1, levels=levels,
     )
-    delta_w1 = delta.T @ activations[-3]  # (64, 128)
-    cm.accumulate(1, delta_w1.astype(np.int64))
-
-    # Propaga δ para camada 0 (hidden1) — usa pesos da camada 1 (hidden2)
     r0 = _radius_for(net.layers[0].input_dim)
-    delta = propagate_delta_with_fake(
-        delta, net.layers[1].weights.T, pre_activations[-3],
-        scale=scale, radius=r0
+    deltas[0] = propagate_delta_with_fake_quantized(
+        deltas[1], net.layers[1].weights.T, pre_activations[-3],
+        scale=scale, radius=r0, levels=levels,
     )
-    delta_w0 = delta.T @ activations[-4]  # (128, 784)
-    cm.accumulate(0, delta_w0.astype(np.int64))
 
-    # 5. Atualização B1: por neurônio disparado (vetorizado)
-    # Para a camada de saída, cada neurônio disparado atualiza suas conexões
-    fired_mask = (out[0] > 0).astype(int)  # (10,)
-    metrics["fired_neurons"] = int(fired_mask.sum())
+    # 5. Acumulação (pesos E bias) com round coerente (H, E)
+    quant_stats = {}
+    for l in range(3):
+        act_in = activations[l]  # (1, fan_in) — 0/1 nas ocultas, pixels [0,1] em l=0
+        dw_float = deltas[l].T @ act_in  # (out_dim, fan_in) float
+        db_float = deltas[l][0]  # (out_dim,) float
+        # Medir sinal antes/depois da conversão inteira (H)
+        nz_before = int(np.sum(dw_float != 0))
+        dw_int = np.round(dw_float).astype(np.int64)
+        db_int = np.round(db_float).astype(np.int64)
+        quant_stats[l] = {
+            "dw_nz_float": nz_before,
+            "dw_nz_int": int(np.sum(dw_int != 0)),
+            "dw_mean_abs_float": float(np.mean(np.abs(dw_float))),
+            "dw_mean_abs_int": float(np.mean(np.abs(dw_int))),
+        }
+        cm.accumulate(l, dw_int, db_int)
 
-    def apply_b1_layer(layer, cm, layer_idx, delta_signs):
-        """Aplica B1 para todos os neurônios de uma camada de uma vez."""
-        updated_total = 0
-        total_total = 0
-        threshold = max(1, np.mean(np.abs(cm.weight_counters[layer_idx])))
+    # 6+7+8. Máscara ÚNICA por camada → atualização → reset na mesma máscara (D)
+    total_selected = 0
+    total_attempts = 0
+    total_blocked = 0
+    total_transitions = 0
+    bias_selected = 0
+    bias_blocked = 0
+    bias_transitions = 0
 
-        for neuron_idx in range(layer.output_dim):
-            C = cm.weight_counters[layer_idx][neuron_idx]
-            mask = np.abs(C) > threshold
-            n_updated = int(np.sum(mask))
-            updated_total += n_updated
-            total_total += layer.input_dim
+    for l, layer in enumerate(net.layers):
+        Cw = cm.weight_counters[l]
+        thr_w = max(1.0, float(np.mean(np.abs(Cw))))
+        mask_w = np.abs(Cw) > thr_w  # máscara única (D)
+        rows, cols = np.where(mask_w)
+        selected = len(rows)
+        blocked = 0
+        transitions = 0
+        for r, c in zip(rows.tolist(), cols.tolist()):
+            step = -int(np.sign(Cw[r, c]))  # (B) descida, sem sign(−error) extra
+            if step != 0:
+                w_old = int(layer.weights[r, c])
+                w_new = int(np.clip(w_old + step, -1, 1))
+                if w_new == w_old:
+                    blocked += 1
+                else:
+                    layer.weights[r, c] = np.int8(w_new)
+                    transitions += 1
+        # Reset error-feedback na MESMA máscara (D), inclusive bloqueados
+        # (saturação consome o contador — ver contrato).
+        if selected:
+            reset_error_feedback(
+                Cw,
+                np.array(rows, dtype=np.int64),
+                np.array(cols, dtype=np.int64),
+            )
 
-            if n_updated > 0:
-                signs = np.sign(C[mask])
-                for i, col_idx in enumerate(np.where(mask)[0]):
-                    sign = delta_signs[neuron_idx] * int(signs[i])
-                    if sign != 0:
-                        layer.weights[neuron_idx, col_idx] = update_weight(
-                            layer.weights[neuron_idx, col_idx], sign
-                        )
+        # Bias (E): mesma disciplina — máscara própria, descida, faixa [-N, N-1]
+        Cb = cm.bias_counters[l]
+        thr_b = max(1.0, float(np.mean(np.abs(Cb)))) if Cb.size else 1.0
+        mask_b = np.abs(Cb) > thr_b
+        b_idx = np.where(mask_b)[0]
+        for bi in b_idx.tolist():
+            bstep = -int(np.sign(Cb[bi]))
+            if bstep != 0:
+                b_old = int(layer.bias[bi])
+                b_new = int(np.clip(b_old + bstep, -layer.input_dim, layer.input_dim - 1))
+                if b_new == b_old:
+                    bias_blocked += 1
+                else:
+                    layer.bias[bi] = np.int32(b_new)
+                    bias_transitions += 1
+        n_bsel = len(b_idx)
+        bias_selected += n_bsel
+        if n_bsel:
+            Cb[b_idx] = 0  # consome contador de bias selecionado
 
-        return {"updated": updated_total, "total": total_total}
+        total_selected += selected
+        total_attempts += selected
+        total_blocked += blocked
+        total_transitions += transitions
 
-    # Camada de saída
-    delta_signs_out = np.sign(-error[0])
-    delta_signs_out[delta_signs_out == 0] = 1
-    result = apply_b1_layer(net.layers[2], cm, 2, delta_signs_out)
-    metrics["updated_weights"] += result["updated"]
-    metrics["total_updates"] += result["total"]
-
-    # Camadas ocultas
-    for layer_idx in [0, 1]:
-        layer = net.layers[layer_idx]
-        layer_activations = activations[layer_idx + 1]  # saída desta camada
-        layer_fired = (layer_activations[0] > 0).astype(int)
-
-        delta_signs_hidden = np.sign(delta[0])
-        delta_signs_hidden[delta_signs_hidden == 0] = 1
-
-        result = apply_b1_layer(layer, cm, layer_idx, delta_signs_hidden)
-        metrics["updated_weights"] += result["updated"]
-        metrics["total_updates"] += result["total"]
-
-    # 6. Reset error-feedback
-    for layer_idx in range(len(net.layers)):
-        # Encontrar índices atualizados (todos os que foram processados)
-        layer = net.layers[layer_idx]
-        layer_fired = (activations[layer_idx + 1][0] > 0).astype(int)
-        fired_indices = np.where(layer_fired > 0)[0]
-
-        if len(fired_indices) > 0:
-            # Para B1, os contadores resetados são os das conexões atualizadas
-            # Simplificação: resetar todos os contadores dos neurônios disparados
-            all_col_indices = []
-            all_row_indices = []
-            for neuron_idx in fired_indices:
-                C = cm.weight_counters[layer_idx][neuron_idx]
-                threshold = max(1, np.mean(np.abs(C)))
-                mask = np.abs(C) > threshold
-                if mask.any():
-                    cols = np.where(mask)[0]
-                    all_row_indices.extend([neuron_idx] * len(cols))
-                    all_col_indices.extend(cols.tolist())
-
-            if all_row_indices:
-                reset_error_feedback(
-                    cm.weight_counters[layer_idx],
-                    np.array(all_row_indices, dtype=np.int64),
-                    np.array(all_col_indices, dtype=np.int64),
-                )
-
-    metrics["loss"] = float(loss)
+    metrics = {
+        "loss": loss,
+        # Diagnóstico de disparo (firing é diagnóstico, não gate)
+        "fired_neurons": int(np.sum(out[0] > 0)),
+        "firing_rates": [float(np.mean(a)) for a in activations[1:]],
+        # Pesos: separação P2
+        "selected_weights": total_selected,
+        "attempts": total_attempts,
+        "blocked_weights": total_blocked,
+        "transitions": total_transitions,
+        "updated_weights": total_transitions,  # legado = transições efetivas
+        "total_updates": sum(l.input_dim * l.output_dim for l in net.layers),
+        # Bias (E)
+        "bias_selected": bias_selected,
+        "bias_blocked": bias_blocked,
+        "bias_transitions": bias_transitions,
+        # Quantização (H)
+        "quant_stats": quant_stats,
+    }
     return metrics
 
 
@@ -291,7 +313,9 @@ def train_batch(
     batch_size = batch_x.shape[0]
     total_loss = 0.0
     total_fired = 0
-    total_updated = 0
+    total_selected = 0
+    total_blocked = 0
+    total_transitions = 0
     total_updates = 0
 
     for i in range(batch_size):
@@ -302,13 +326,18 @@ def train_batch(
         )
         total_loss += sample_metrics["loss"]
         total_fired += sample_metrics["fired_neurons"]
-        total_updated += sample_metrics["updated_weights"]
+        total_selected += sample_metrics["selected_weights"]
+        total_blocked += sample_metrics["blocked_weights"]
+        total_transitions += sample_metrics["transitions"]
         total_updates += sample_metrics["total_updates"]
 
     return {
         "loss": total_loss / batch_size,
         "fired_neurons": total_fired,
-        "updated_weights": total_updated,
+        "selected_weights": total_selected,
+        "blocked_weights": total_blocked,
+        "transitions": total_transitions,
+        "updated_weights": total_transitions,  # legado = transições
         "total_updates": total_updates,
         "batch_size": batch_size,
     }
@@ -324,7 +353,10 @@ def evaluate(
     batch_size: int = 128,
 ) -> float:
     """
-    Avalia acurácia da rede no conjunto de teste.
+    [012] Avalia acurácia: argmax(scores) do forward unificado.
+
+    Consome `forward_with_scores` em batches — sem reimplementar camadas,
+    com degrau em todas as ocultas (corrige achado A).
 
     Args:
         net: TernaryNet.
@@ -343,16 +375,8 @@ def evaluate(
         batch_x = test_data[start:end].astype(np.float32)
         batch_y = test_labels[start:end]
 
-        # Forward pass
-        out = net.forward(batch_x)
-
-        # Classificação: argmax do pre-activation (z antes do degrau)
-        # Para isso, recompute z
-        z = batch_x @ net.layers[0].weights.T + net.layers[0].bias
-        z = (z > 0).astype(np.float32) @ net.layers[1].weights.T + net.layers[1].bias
-        z = z @ net.layers[2].weights.T + net.layers[2].bias
-
-        preds = np.argmax(z, axis=1)
+        scores, _, _, _ = net.forward_with_scores(batch_x)
+        preds = np.argmax(scores, axis=1)
         correct += np.sum(preds == batch_y)
 
     return correct / n_samples
@@ -369,7 +393,7 @@ def train_b1(
     levels: int = 5,
     seed: int = 42,
     exp_name: str = "exp-007-b1-error-feedback",
-    adaptive_radius: bool = False,
+    adaptive_radius: bool = True,
     scale_factor: float = 1.0,
     decay_rate: Optional[float] = None,
     decay_shift: Optional[int] = None,
@@ -377,6 +401,8 @@ def train_b1(
 ) -> Tuple[TernaryNet, Dict]:
     """
     Treina a Rede B com regra B1 + error-feedback.
+
+    [012] Default `adaptive_radius=True` alinhado a DEFAULT_HYPERPARAMS.
 
     Args:
         epochs: número de epochs.
@@ -500,10 +526,16 @@ def train_b1(
     # Salvar métricas
     save_metrics(metrics, str(results_dir / "metrics.json"))
 
-    # Salvar pesos
+    # Salvar pesos + bias [012] (inferência com bias treinado) + contadores
     np.savez(
         str(results_dir / "weights.npz"),
         **{f"layer_{i}": net.layers[i].weights
+           for i in range(len(net.layers))},
+        **{f"bias_{i}": net.layers[i].bias
+           for i in range(len(net.layers))},
+        **{f"counter_{i}": cm.weight_counters[i]
+           for i in range(len(net.layers))},
+        **{f"counter_bias_{i}": cm.bias_counters[i]
            for i in range(len(net.layers))},
     )
 

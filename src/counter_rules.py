@@ -57,9 +57,24 @@ class CounterManager:
     Cada conexão (peso) tem um contador C_ij que acumula evidências
     de que deve ser atualizada.
 
-    Suporta decaimento temporal (leaky) — task 011:
-        C^{(t+1)} = floor(gamma * C^{(t)}) + Delta
-        ou bitshift: C - (C >> shift) + Delta  (gamma = 1 - 2^-shift)
+    Contrato [012]: C acumula GRADIENTE (sinal de prediction − target
+    propagado pelo surrogate). A atualização é sempre descida:
+        W <- clip(W − sign(C), −1, +1).
+    Sem multiplicação extra por sign(−error) da amostra corrente.
+
+    Política de leak [012] (simétrica em sinal, zero é ponto fixo):
+    - decay_rate (gamma):  C <- sign(C) * floor(gamma * |C|).
+      Truncamento em direção a zero sobre a magnitude; |C|=1 decai
+      para 0 quando gamma < 1. Simétrico: decay(−C) = −decay(C).
+    - decay_shift (s):     C <- sign(C) * (|C| − step),
+      onde step = |C| >> s se nonzero, senão 1 (para |C| > 0).
+      O passo mínimo de 1 garante que valores pequenos (|C| < 2^s)
+      ainda vazam em direção a zero; único ponto fixo é 0.
+      (O bitshift puro `C − (C >> s)` é aritmético/floor e NÃO é
+      simétrico; por isso não é mais usado.)
+
+    Suporta decaimento temporal (leaky) — task 011, corrigido em 012:
+        C^{(t+1)} = decay(C^{(t)}) + Delta
     """
 
     def __init__(self, layer_shapes: List[Tuple[int, int]],
@@ -98,16 +113,22 @@ class CounterManager:
             self.bias_counters.append(np.zeros(shape[0], dtype=np.int64))
 
     def _apply_decay_array(self, arr: np.ndarray) -> np.ndarray:
-        """Aplica decaimento a um array de contadores (in-place logic)."""
+        """[012] Aplica decaimento simétrico (ver docstring da classe)."""
         if self.decay_rate is None and self.decay_shift is None:
             return arr
         if self.decay_shift is not None:
-            # Bitshift: C - (C >> shift)  -> gamma = 1 - 2^-shift
-            # Para negativos, >> é aritmético (floor), correto para decaimento simétrico
-            return arr - (arr >> self.decay_shift)
-        # decay_rate: floor(gamma * C)
-        # np.floor lida corretamente com negativos (ex: floor(-0.9)= -1)
-        return np.floor(self.decay_rate * arr).astype(np.int64, casting="unsafe")
+            # Simétrico: opera na magnitude, passo mínimo 1 p/ |C|>0.
+            # gamma efetivo ≈ 1 − 2^-shift para |C| grande.
+            abs_c = np.abs(arr)
+            step = abs_c >> self.decay_shift
+            # Onde |C|>0 mas step==0, vazar 1 unidade em direção a zero.
+            step = np.where((abs_c > 0) & (step == 0), 1, step)
+            decayed_abs = abs_c - step
+            return np.sign(arr).astype(np.int64) * decayed_abs.astype(np.int64)
+        # decay_rate: sign(C) * floor(gamma * |C|) — simétrico, zero fixo.
+        abs_c = np.abs(arr).astype(np.float64)
+        decayed_abs = np.floor(self.decay_rate * abs_c).astype(np.int64)
+        return np.sign(arr).astype(np.int64) * decayed_abs
 
     def decay(self, layer_idx: Optional[int] = None) -> None:
         """
@@ -151,15 +172,19 @@ class CounterManager:
         """
         Retorna índices das K conexões com maior |C_ij| em uma camada.
 
+        [012] K <= 0 retorna seleção vazia (antes, [-k:] selecionava tudo).
+
         Args:
             layer_idx: índice da camada.
             k: número de conexões a selecionar.
-
         Returns:
             (row_indices, col_indices) dos top-k pesos.
         """
         C = self.weight_counters[layer_idx]
         abs_C = np.abs(C)
+
+        if k is None or k <= 0:
+            return (np.array([], dtype=np.int64), np.array([], dtype=np.int64))
 
         if k >= C.size:
             # Todos os índices não-nulos
@@ -248,25 +273,31 @@ def apply_update_neuron(
     counters: CounterManager,
     layer_idx: int,
     neuron_idx: int,
-    delta_sign: int = 1,
+    delta_sign: Optional[int] = None,
     threshold: Optional[float] = None,
 ) -> Dict:
     """
     Regra B1: atualiza conexões de um neurônio específico.
 
-    Quando um neurônio dispara, avalia todas as suas conexões de entrada.
-    Se |C_ij| > threshold, atualiza W_ij na direção de sign(C_ij).
+    Contrato [012]: C acumula gradiente ⇒ W <- clip(W − sign(C)).
+    O parâmetro legado `delta_sign` é ignorado (mantido por
+    compatibilidade; a direção é sempre −sign(C)).
+
+    Semântica de saturação [012]: a tentativa em peso já saturado
+    (±1 pedindo o mesmo sentido) é BLOQUEADA (peso não muda), mas o
+    contador é consumido (resetado) e o evento é contado como
+    `blocked` separadamente de `transitions` efetivas.
 
     Args:
         layer: camada TernaryLayer a atualizar.
         counters: CounterManager com os contadores acumulados.
         layer_idx: índice da camada no CounterManager.
         neuron_idx: índice do neurônio que disparou.
-        delta_sign: direção da atualização (+1 ou −1).
+        delta_sign: DEPRECIADO, ignorado.
         threshold: limiar mínimo. Se None, usa max(1, mean(|C|)).
 
     Returns:
-        Dict com métricas da atualização.
+        Dict com métricas: selected, attempts, blocked, transitions.
     """
     input_dim = layer.input_dim
     C = counters.weight_counters[layer_idx][neuron_idx].copy()  # (input_dim,)
@@ -275,26 +306,36 @@ def apply_update_neuron(
         threshold = max(1, np.mean(np.abs(C)))
 
     mask = np.abs(C) > threshold
-    updated = int(np.sum(mask))
-    skipped = input_dim - updated
+    selected = int(np.sum(mask))
 
-    # Atualizar pesos
+    # Direção de descida: −sign(C)
+    transitions = 0
+    blocked = 0
     signs = np.sign(C[mask])
     for i, col_idx in enumerate(np.where(mask)[0]):
-        sign = delta_sign * int(signs[i])
-        if sign != 0:
-            layer.weights[neuron_idx, col_idx] = update_weight(
-                layer.weights[neuron_idx, col_idx], sign
-            )
+        step = -int(signs[i])  # [012] descida sobre gradiente acumulado
+        if step != 0:
+            w_old = int(layer.weights[neuron_idx, col_idx])
+            w_new = int(np.clip(w_old + step, -1, 1))
+            if w_new == w_old:
+                blocked += 1
+            else:
+                layer.weights[neuron_idx, col_idx] = np.int8(w_new)
+                transitions += 1
 
-    # Reset dos contadores atualizados (error-feedback)
+    # Reset dos contadores atualizados (error-feedback): consome mesmo
+    # tentativas bloqueadas (saturação), preservando não-selecionados.
     counters.reset_selected(layer_idx,
-                            np.array([neuron_idx] * updated),
+                            np.array([neuron_idx] * selected),
                             np.where(mask)[0])
 
     return {
-        "updated": updated,
-        "skipped": skipped,
+        "updated": transitions,  # legado: transições efetivas
+        "selected": selected,
+        "attempts": selected,
+        "blocked": blocked,
+        "transitions": transitions,
+        "skipped": input_dim - selected,
         "total": input_dim,
         "threshold": float(threshold),
     }
@@ -313,12 +354,15 @@ def apply_update_layer_topk(
     """
     Regra B2: atualiza K conexões com maior |C_ij| em uma camada.
 
+    [012] Direção: W <- clip(W − sign(C)); delta_sign ignorado.
+    [012] K <= 0 → nenhuma seleção. Distingue bloqueios de transições.
+
     Args:
         layer: camada TernaryLayer a atualizar.
         counters: CounterManager com os contadores acumulados.
         layer_idx: índice da camada.
         k: número de conexões a atualizar.
-        delta_sign: direção da atualização (+1 ou −1).
+        delta_sign: DEPRECIADO, ignorado.
 
     Returns:
         Dict com métricas da atualização.
@@ -328,20 +372,24 @@ def apply_update_layer_topk(
     # Selecionar top-k
     row_idx, col_idx = counters.get_top_k_weights(layer_idx, k)
 
-    # Direção: sign(C_ij)
-    C_vals = weight_counters[row_idx, col_idx]
+    # Direção [012]: −sign(C) (descida sobre gradiente acumulado)
+    C_vals = weight_counters[row_idx, col_idx] if len(row_idx) else np.array([], dtype=np.int64)
     signs = np.sign(C_vals).astype(np.int8)
-    update_signs = delta_sign * signs
+    update_signs = -signs
 
     # Atualizar pesos
     updated = 0
+    blocked = 0
     for i in range(len(row_idx)):
         if update_signs[i] != 0:
-            layer.weights[int(row_idx[i]), int(col_idx[i])] = update_weight(
-                layer.weights[int(row_idx[i]), int(col_idx[i])],
-                int(update_signs[i])
-            )
-            updated += 1
+            r, c = int(row_idx[i]), int(col_idx[i])
+            w_old = int(layer.weights[r, c])
+            w_new = int(np.clip(w_old + int(update_signs[i]), -1, 1))
+            if w_new == w_old:
+                blocked += 1
+            else:
+                layer.weights[r, c] = np.int8(w_new)
+                updated += 1
 
     # Reset contadores atualizados
     counters.reset_selected(layer_idx, row_idx, col_idx)
@@ -349,6 +397,9 @@ def apply_update_layer_topk(
     return {
         "updated": updated,
         "selected": len(row_idx),
+        "attempts": len(row_idx),
+        "blocked": blocked,
+        "transitions": updated,
         "k": k,
     }
 
@@ -365,13 +416,15 @@ def apply_update_network_topk(
     """
     Regra B3: aplica Top-K em cada camada simultaneamente.
 
+    [012] Direção: W <- clip(W − sign(C)); delta_sign ignorado.
+
     Total de atualizações: N_layers × K.
 
     Args:
         net: rede TernaryNet completa.
         counters: CounterManager com contadores de todas as camadas.
         k_per_layer: número de conexões a atualizar por camada.
-        delta_sign: direção da atualização (+1 ou −1).
+        delta_sign: DEPRECIADO, ignorado.
 
     Returns:
         Dict com métricas por camada e totais.
@@ -389,7 +442,7 @@ def apply_update_network_topk(
 
     return {
         "total_updated": total_updated,
-        "total_selected": total_updated,  # mesmo que updated (clip já aplicado)
+        "total_selected": sum(r["selected"] for r in layer_results),
         "num_layers": len(net.layers),
         "k_per_layer": k_per_layer,
         "layer_results": layer_results,
@@ -522,10 +575,17 @@ if __name__ == "__main__":
     cm_b1.accumulate(0, np.ones((128, 784), dtype=np.int64))
 
     # Aplicar B1 no neurônio 0
+    # [012] C>0 acumula gradiente ⇒ descida W −= sign(C) (pesos diminuem).
+    w_before = layer.weights[0].copy()
     result = apply_update_neuron(layer, cm_b1, 0, 0, delta_sign=1, threshold=0.5)
-    assert result["updated"] == 784, f"Esperado 784 atualizadas, got {result['updated']}"
+    assert result["selected"] == 784, f"Esperado 784 selecionados, got {result['selected']}"
     assert result["total"] == 784
-    print(f"   ✓ B1: {result['updated']}/{result['total']} conexões atualizadas")
+    assert result["transitions"] + result["blocked"] == result["selected"]
+    print(f"   ✓ B1: {result['selected']}/{result['total']} selecionados, "
+          f"{result['transitions']} transições, {result['blocked']} bloqueios")
+    # Direção de descida: nenhum peso deve ter aumentado
+    assert np.all(layer.weights[0].astype(np.int16) <= w_before.astype(np.int16)), \
+        "B1 deve mover pesos para baixo quando C>0 (W − sign(C))"
 
     # Verificar que pesos mudaram
     w_after = layer.weights[0]
@@ -574,9 +634,11 @@ if __name__ == "__main__":
     assert result["num_layers"] == 3
     assert result["k_per_layer"] == k_per_layer
     expected_total = k_per_layer * 3
-    assert result["total_updated"] == expected_total, \
-        f"Esperado {expected_total}, got {result['total_updated']}"
-    print(f"   ✓ B3: {result['total_updated']} atualizações em 3 camadas")
+    # [012] selecionados = k*camadas; transições podem ser menores (bloqueio)
+    assert result["total_selected"] == expected_total, \
+        f"Esperado {expected_total} selecionados, got {result['total_selected']}"
+    print(f"   ✓ B3: {result['total_selected']} selecionados, "
+          f"{result['total_updated']} transições em 3 camadas")
     print(f"       {result['layer_results']}")
 
     # --- Teste 6: compute_counter_delta ---

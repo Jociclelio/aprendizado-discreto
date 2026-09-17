@@ -270,6 +270,54 @@ class TernaryNet:
 
         return out
 
+    def forward_with_scores(self, x: np.ndarray):
+        """
+        [012] Forward unificado: expõe scores e ativações sem duplicar lógica.
+
+        Contrato [012]:
+            z_l = W_l @ x_{l-1} + b_l (pré-ativação, inclui bias int32),
+            a_l = step(z_l) com step(z) = 1 se z > 0 else 0,
+            scores = z_out (pré-ativação da camada de saída, ANTES do degrau),
+            a_out = step(z_out) (saída binária).
+
+        Todas as camadas ocultas aplicam o degrau. `evaluate()` deve usar
+        os scores desta função (argmax), nunca reimplementar as camadas.
+
+        Args:
+            x: entradas, shape (batch, input_dim) ou (input_dim,).
+
+        Returns:
+            (scores, binary_out, pre_activations, activations):
+            - scores: (batch, output_dim) float — z da última camada.
+            - binary_out: (batch, output_dim) float {0,1} — step(scores).
+            - pre_activations: lista de z_l por camada, cada (batch, dim_l).
+            - activations: lista [x, a_1, ..., a_L], cada (batch, dim).
+              Para input 1-D, retorna formas 1-D em scores/binary_out.
+        """
+        single = (x.ndim == 1)
+        if single:
+            x = x.reshape(1, -1)
+
+        pre_activations = []
+        activations = [x.astype(np.float32)]
+        out = x.astype(np.float32)
+        for layer in self.layers:
+            z = out @ layer.weights.T + layer.bias  # (batch, out_dim)
+            pre_activations.append(z)
+            layer._cache = {"x": out, "z_pre": z}
+            out = step_activation(z)
+            activations.append(out)
+
+        scores = pre_activations[-1]
+        binary_out = activations[-1]
+        if single:
+            return scores[0], binary_out[0], pre_activations, activations
+        return scores, binary_out, pre_activations, activations
+
+    def firing_rates(self, activations) -> list:
+        """[012] Taxa de disparo por camada (média de a_l). Anti-colapso."""
+        return [float(np.mean(a)) for a in activations[1:]]
+
     def get_weights(self) -> List[np.ndarray]:
         """Retorna lista de matrizes de peso."""
         return [layer.get_weights() for layer in self.layers]
@@ -326,7 +374,12 @@ def ternary_binary_loss(
     targets: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Perda por erro absoluto por neurônio (equivalente a BCE sem softmax).
+    [012] Perda L1 média por neurônio sobre bits (NÃO é BCE).
+
+    loss = mean(|pred - target|) sobre (batch × 10).
+    Nota anti-colapso: uma saída toda-zero tem L1 ≈ 0.1 em 10 classes
+    (1/10); loss pequena isolada pode esconder colapso — monitorar
+    também taxa de disparos por camada (ver TernaryNet.firing_rates).
 
     Para saída degrau binária (10 neurônios, cada um decide binariamente
     se a imagem pertence àquela classe).

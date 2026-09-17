@@ -1,0 +1,93 @@
+{
+  "checks": {
+    "A_eval_caso_minimo": {
+      "pass": true,
+      "detail": "evaluate=1.0 (antes 0.0)"
+    },
+    "A_eval_eq_argmax_scores": {
+      "pass": true,
+      "detail": "acc=1.0"
+    },
+    "A_hidden_step_aplicado": {
+      "pass": true,
+      "detail": "recomputa\u00e7\u00e3o sem step diverge do forward correto"
+    },
+    "B_direcao_saida": {
+      "pass": true,
+      "detail": "pesos=[1, 0] (antes [-1, 0])"
+    },
+    "B_convencao_W_menos_signC": {
+      "pass": true,
+      "detail": "linha0=[-1, -1, 1, 1]"
+    },
+    "C_shapes": {
+      "pass": true,
+      "detail": "(1, 2) (1, 2) (1, 4)"
+    },
+    "C_independencia": {
+      "pass": true,
+      "detail": "deltas recomputados por camada, sem reuse"
+    },
+    "D_reset_na_mesma_mascara": {
+      "pass": true,
+      "detail": "6 resets (um por camada/amostra com sele\u00e7\u00e3o)"
+    },
+    "D_reset_consume_selecionados": {
+      "pass": true,
+      "detail": "selecionados zerados, n\u00e3o-selecionados preservados"
+    },
+    "E_bias_faixa": {
+      "pass": true,
+      "detail": "bias em [-N, N-1]"
+    },
+    "E_bias_aprende": {
+      "pass": true,
+      "detail": "bias_out=[1, 0] (era [0, 0])"
+    },
+    "F_normalize_reduz": {
+      "pass": true,
+      "detail": "m\u00e9dia 10.00 \u2248 10 (antes 90)"
+    },
+    "F_indices_int_sem_IndexError": {
+      "pass": true,
+      "detail": "policy normalize em todas"
+    },
+    "G_gamma_simetrico": {
+      "pass": true,
+      "detail": "[-1, 0, 0, 0, 1]"
+    },
+    "G_shift_simetrico": {
+      "pass": true,
+      "detail": "[-1, 0, 0, 0, 1]"
+    },
+    "G_zero_ponto_fixo": {
+      "pass": true,
+      "detail": "decay(0)=0"
+    },
+    "H_round_preserva": {
+      "pass": true,
+      "detail": "round=[[1, -1, 0, 2]] vs trunc=[[0, 0, 0, 1]]"
+    },
+    "H_quant_stats_presentes": {
+      "pass": true,
+      "detail": "sinal pr\u00e9/p\u00f3s-quant registrado"
+    },
+    "P2_K0_vazio": {
+      "pass": true,
+      "detail": "top-k com k=0 vazio"
+    },
+    "P2_acc_K0_vazio": {
+      "pass": true,
+      "detail": "acc top-k k=0"
+    },
+    "P2_metricas_separadas": {
+      "pass": true,
+      "detail": "chaves=['attempts', 'bias_blocked', 'bias_selected', 'bias_transitions', 'blocked_weights', 'fired_neurons', 'firing_rates', 'loss', 'quant_stats', 'selected_weights', 'total_updates', 'transitions', 'updated_weights']"
+    },
+    "P2_defaults_alinhados": {
+      "pass": true,
+      "detail": "DEFAULT=True sig=True"
+    }
+  },
+  "summary": "22/22 passed"
+}

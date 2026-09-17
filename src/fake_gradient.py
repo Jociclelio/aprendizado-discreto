@@ -189,6 +189,38 @@ def propagate_delta_with_fake(
     return propagate_delta(delta_next, weights, fake_grad_val=fake_grad_mean)
 
 
+def propagate_delta_with_fake_quantized(
+    delta_next: np.ndarray,
+    weights: np.ndarray,
+    z_local: np.ndarray,
+    scale: float = 1.0,
+    radius: float = 1.0,
+    levels: int = 5,
+) -> np.ndarray:
+    """
+    [012] Propagação com surrogate QUANTIZADO (coerente com a saída).
+
+    Calcula o triangular contínuo, quantiza com `levels` (mesma regra da
+    saída) e aplica a regra da cadeia. Evita que o gate contínuo das
+    ocultas divirja da representação inteira usada no acúmulo.
+
+    Args:
+        delta_next: δ da camada seguinte, shape (batch, next_units).
+        weights: pesos, shape (current_units, next_units).
+        z_local: pré-ativações locais, shape (batch, current_units).
+        scale, radius: parâmetros do triangular.
+        levels: níveis de quantização (default 5 → {-2..+2}).
+
+    Returns:
+        δ da camada atual, shape (batch, current_units).
+    """
+    fake_cont = triangular_fake_grad(z_local, scale=scale, radius=radius)
+    q_fake = quantize_fake_grad(fake_cont, levels=levels).astype(np.float64)
+    # Média por neurônio ao longo do batch (equivale ao local p/ 1 amostra)
+    q_fake_mean = q_fake.mean(axis=0)
+    return propagate_delta(delta_next, weights, fake_grad_val=q_fake_mean)
+
+
 # ---------------------------------------------------------------------------
 # Raio adaptativo ao fan-in (task 010)
 # ---------------------------------------------------------------------------
@@ -302,14 +334,22 @@ class CounterAccumulator:
         self.counters.fill(0)
 
     def normalize(self) -> None:
-        """Normaliza contadores para [-1, 1] baseado no máximo absoluto."""
+        """[012] Normaliza preservando dtype inteiro (round simétrico).
+
+        Escala para que max|C| ≈ 1 via rint; mantém int64 (contrato inteiro).
+        """
         max_abs = np.max(np.abs(self.counters))
         if max_abs > 0:
-            self.counters = self.counters / max_abs
+            scaled = np.rint(
+                self.counters.astype(np.float64) / float(max_abs)
+            ).astype(np.int64)
+            self.counters = scaled.astype(self.counters.dtype, casting="unsafe")
 
     def top_k_indices(self, k: int) -> np.ndarray:
         """
         Retorna índices das K conexões com maior |C_ij| por linha (por neurônio).
+
+        [012] k <= 0 → máscara vazia.
 
         Args:
             k: número de conexões a selecionar por linha.
@@ -319,6 +359,9 @@ class CounterAccumulator:
         """
         abs_count = np.abs(self.counters)
         shape = self.counters.shape
+
+        if k is None or k <= 0:
+            return np.zeros_like(self.counters, dtype=bool)
 
         if k >= shape[-1]:
             return np.ones_like(self.counters, dtype=bool)
@@ -481,9 +524,11 @@ if __name__ == "__main__":
                          [5, 6, 7, 8],
                          [9, 10, 11, 12]]))
     acc.normalize()
-    assert np.isclose(acc.get_counters().max(), 1.0), "normalize falhou"
-    assert np.isclose(acc.get_counters().min(), 1.0 / 12.0), "normalize falhou"
-    print("   ✓ normalize")
+    # [012] preserva int64: max|C|→1, resto rounded (1/12→0, 6/12→0/1...)
+    assert acc.get_counters().dtype == np.int64 or np.issubdtype(
+        acc.get_counters().dtype, np.integer), "normalize quebrou dtype int"
+    assert int(np.max(np.abs(acc.get_counters()))) == 1, "normalize falhou"
+    print("   ✓ normalize (int-safe)")
 
     # top_k_indices (k por linha)
     acc2 = CounterAccumulator(shape=(2, 5))

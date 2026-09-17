@@ -63,6 +63,11 @@ def reset_normalize(counters: np.ndarray,
     """
     Normalize: zera contadores atualizados, escala restantes.
 
+    [012] Fator corrigido: scale = target_scale / mean_abs (antes era o
+    inverso, que AMPLIAVA a escala). Quantização inteira por
+    arredondamento simétrico (round-half-away via rint), não truncamento.
+    Índices vazios devem ter dtype inteiro.
+
     Escala os contadores não-atualizados para manter a magnitude média
     em target_scale, preservando a informação relativa.
 
@@ -72,33 +77,40 @@ def reset_normalize(counters: np.ndarray,
         col_indices: índices das colunas a zerar.
         target_scale: magnitude alvo para os contadores restantes.
     """
+    row_indices = np.asarray(row_indices).astype(np.int64, casting="unsafe")
+    col_indices = np.asarray(col_indices).astype(np.int64, casting="unsafe")
     # Copiar para identificar não-atualizados
     mask = np.ones_like(counters, dtype=bool)
-    mask[row_indices, col_indices] = False
+    if len(row_indices):
+        mask[row_indices, col_indices] = False
 
     non_updated = counters[mask]
     nonzero_mask = non_updated != 0
 
     if nonzero_mask.sum() == 0:
         # Todos os contadores estão nos índices a zerar — não há o que escalar
-        counters[row_indices, col_indices] = 0
+        if len(row_indices):
+            counters[row_indices, col_indices] = 0
         return
 
     mean_abs = np.mean(np.abs(non_updated[nonzero_mask]))
 
     if mean_abs == 0:
         # Não-atualizados são todos zero — não escalar
-        counters[row_indices, col_indices] = 0
+        if len(row_indices):
+            counters[row_indices, col_indices] = 0
         return
 
-    scale_factor = mean_abs / target_scale
+    scale_factor = target_scale / mean_abs
 
     # Zerar atualizados
-    counters[row_indices, col_indices] = 0
+    if len(row_indices):
+        counters[row_indices, col_indices] = 0
 
-    # Escalar restantes
+    # Escalar restantes com arredondamento inteiro simétrico
     if scale_factor != 1.0:
-        counters[mask] = (counters[mask] * scale_factor).astype(np.int64)
+        scaled = np.rint(counters[mask].astype(np.float64) * scale_factor)
+        counters[mask] = scaled.astype(np.int64)
 
 
 # ---------------------------------------------------------------------------
@@ -234,7 +246,8 @@ def apply_reset_on_manager_all_layers(cm: CounterManager,
     elif policy == "normalize":
         for i in range(cm.num_layers):
             reset_normalize(cm.weight_counters[i],
-                            np.array([]), np.array([]), target_scale)
+                            np.array([], dtype=np.int64),
+                            np.array([], dtype=np.int64), target_scale)
 
 
 # ---------------------------------------------------------------------------
@@ -281,11 +294,17 @@ if __name__ == "__main__":
 
     # Não-atualizados: [20, 30, 40, 60]
     # mean(|non_zero|) = mean([20, 30, 40, 60]) = 37.5
-    # scale_factor = 37.5 / 10.0 = 3.75
-    expected_scale = 37.5 / 10.0
-    assert C3[0, 1] == int(20 * expected_scale), \
-        f"Erro: esperado {int(20 * expected_scale)}, got {C3[0, 1]}"
-    print(f"   ✓ escala restantes corretamente (factor={expected_scale:.2f})")
+    # [012] fator corrigido = target/mean = 10/37.5 ≈ 0.2667 (reduz a escala)
+    # com round inteiro: [5, 8, 11, 16]; média ≈ 10 ± erro de arredondamento
+    remaining = np.array([v for k, v in
+                          {(0, 1): C3[0, 1], (0, 2): C3[0, 2],
+                           (1, 0): C3[1, 0], (1, 2): C3[1, 2]}.items()])
+    mean_after = float(np.mean(np.abs(remaining)))
+    assert abs(mean_after - 10.0) <= 2.0, \
+        f"Erro: média após normalize {mean_after}, esperado ≈10"
+    assert C3[0, 1] == int(round(20 * 10.0 / 37.5)), \
+        f"Erro: esperado {int(round(20 * 10.0 / 37.5))}, got {C3[0, 1]}"
+    print(f"   ✓ reduz escala p/ alvo (média {mean_after:.2f} ≈ 10)")
     print(f"     antes: {C3_copy.tolist()}")
     print(f"     depois: {C3.tolist()}")
 
@@ -331,10 +350,10 @@ if __name__ == "__main__":
                       np.array([0]), np.array([0]),
                       target_scale=10.0)
     assert C7[0, 0] == 0, "Erro: normalize estático não zerou"
-    # mean(|não-atualizados|) = mean([20, 30, 40]) = 30
-    # scale_factor = 30 / 10 = 3.0
-    # C7[1,0] = 30 * 3 = 90
-    assert C7[1, 0] == 90, f"Erro: normalize estático, esperado 90, got {C7[1, 0]}"
+    # [012] mean(|não-atualizados|) = mean([20, 30, 40]) = 30
+    # fator = 10/30 = 1/3 → [7, 10, 13] com round
+    assert C7[1, 0] == 10, f"Erro: normalize estático, esperado 10, got {C7[1, 0]}"
+    assert C7[0, 1] == 7 and C7[1, 1] == 13, f"got {C7.tolist()}"
     print("   ✓ normalize via método estático")
 
     # --- Teste 6: Integração com CounterManager ---
