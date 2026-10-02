@@ -37,7 +37,7 @@ Atualmente os contadores $C_{ij}$ acumulam $\Delta_{ij}$ de forma estritamente i
 - `CounterManager` em `src/counter_rules.py:53` agora aceita `decay_rate` (0.9/0.95/0.99) ou `decay_shift` (3/4/5) com `decay()` e `_apply_decay_array()`; `accumulate(apply_decay=True)` e `decay_per_batch` em `src/ternary_b1.py:280`
 - Decaimento validado: 100→90 (γ0.9), 100→88 (shift3), 100→95→90→85 (γ0.95 5 passos), inativo decai 100→57 em 10 passos γ0.95
 - Sintético 100 passos Δ=+5: sem leak diverge para 500, com γ0.90 estabiliza 41, γ0.95 81, γ0.99 285, shift4 80 (`counter_stability.png`)
-- MNIST rápido (1500 amostras, 3 epochs, adaptive c0.5): sem leak max0=3 flip0=8.4%, γ0.99 max0=4, γ0.95 max0=2, shift4 max0=1 — leak limita magnitude, mas acc ainda ~10% (0.11) e flip cai a 0 após epoch1 com/sem leak, indicando que só leak não desbloqueia aprendizado; precisa 012 (margin+homeostase) para convergir. Métricas em `metrics.json`, `leaky_comparison.png`.
+- MNIST rápido (1500 amostras, 3 epochs, adaptive c0.5): sem leak max0=3 flip0=8.4%, γ0.99 max0=4, γ0.95 max0=2, shift4 max0=1 — leak limita magnitude, mas acc ainda ~10% (0.11) e flip cai a 0 após epoch1 com/sem leak, indicando que só leak não desbloqueia aprendizado; precisa primeiro da reparação do B1 (012) e, depois, das ablações (015). Métricas em `metrics.json`, `leaky_comparison.png`.
 
 ## Notas de implementação
 

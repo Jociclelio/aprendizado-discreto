@@ -94,10 +94,13 @@ Isso dá **3 (regra de atualização) × 3 (política de reset) = 9 configuraç�
 
 ### Ordem de implementação sugerida
 
+> **Atualizado (relatório Astra, commit `6f47914`):** a análise identificou defeitos P0/P1 no B1 que impedem interpretar os ~10% registrados. A ordem foi reorganizada para **reparar antes de refinar** — ver a seção de Tasks abaixo (012→016).
+
 1. Rede A treinada e validada primeiro, como referência fixa de acurácia/curva de convergência.
 2. Rede B com uma única configuração inicial (ex.: B1 + reset "zera só atualizados") para validar que o mecanismo básico aprende algo em MNIST (não só em XOR).
-3. Expandir para as demais 8 configurações somente depois que a configuração inicial mostrar sinal de aprendizado real.
-4. Comparação final qualitativa (gráficos de curva de treino lado a lado, não necessariamente testes estatísticos formais nessa fase).
+3. **Reparar o B1** (contrato matemático + P0/P1) e provar aprendizado num subconjunto pequeno.
+4. Ensaio MNIST auditável (proveniência, validação, ≥3 sementes).
+5. Ablações (margem, homeostase, leak) e benchmark final de eficiência.
 
 ---
 
@@ -120,8 +123,11 @@ ideia/
 │   ├── 009-comparison.md
 │   ├── 010-adaptive-radius-and-data-normalization.md
 │   ├── 011-leaky-counters-momentum.md
-│   ├── 012-margin-loss-and-homeostasis.md
-│   └── 013-refined-comparison-and-benchmarks.md
+│   ├── 012-repara-b1-contrato-matematico.md
+│   ├── 013-prova-aprendizado-subconjunto.md
+│   ├── 014-ensaio-mnist-auditable.md
+│   ├── 015-ablacoes-margin-homeostasis-leak.md
+│   └── 016-benchmark-eficiencia.md
 ├── src/
 │   ├── baseline.py        ← Rede A (MLP float32 + backprop)
 │   ├── ternary_net.py     ← Rede B (pesos ternários + contadores)
@@ -155,8 +161,11 @@ ideia/
 | 009 | `009-comparison.md` | Comparação qualitativa final: A vs. todas as B originais | 010 |
 | 010 | `010-adaptive-radius-and-data-normalization.md` | Normalização de dados e fake gradient adaptativo ao fan-in | 011 |
 | 011 | `011-leaky-counters-momentum.md` | Contadores com decaimento temporal (leaky momentum) | 012 |
-| 012 | `012-margin-loss-and-homeostasis.md` | Perda com margem multiclasse e homeostase de disparos | 013 |
-| 013 | `013-refined-comparison-and-benchmarks.md` | Benchmark comparativo: Baseline vs. Original vs. Refinada | — |
+| 012 | `012-repara-b1-contrato-matematico.md` | **Repara B1**: contrato matemático + correções P0/P1 do relatório Astra | 013 |
+| 013 | `013-prova-aprendizado-subconjunto.md` | Prova de aprendizado em subconjunto pequeno (diagnóstico) | 014 |
+| 014 | `014-ensaio-mnist-auditable.md` | Ensaio MNIST auditável (proveniência, validação, ≥3 sementes) | 015 |
+| 015 | `015-ablacoes-margin-homeostasis-leak.md` | Ablações: margem, homeostase e leak sobre o B1 corrigido | 016 |
+| 016 | `016-benchmark-eficiencia.md` | Benchmark final + validação da proposta de eficiência | — |
 
 ## Dependências
 
