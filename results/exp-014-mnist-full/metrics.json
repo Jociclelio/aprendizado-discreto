@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-10-02T11:31:14.258558+00:00",
+  "experiment": "exp-014-mnist-full",
+  "config": {
+    "scale": 1.0,
+    "adaptive_radius": true,
+    "scale_factor": 1.0,
+    "levels": 5,
+    "batch_size": 32,
+    "epochs": 3,
+    "decay_rate": null,
+    "decay_shift": null,
+    "decay_per_batch": true,
+    "seeds": [
+      42,
+      123,
+      999
+    ],
+    "train_size": 10000,
+    "val_size": 5000,
+    "test_size": 10000
+  },
+  "seeds": [
+    42,
+    123,
+    999
+  ],
+  "results": [
+    {
+      "seed": 42,
+      "best_epoch": 1,
+      "best_val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "train_time_s": 51.64,
+      "test_pred_dist": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        10000,
+        0
+      ]
+    },
+    {
+      "seed": 123,
+      "best_epoch": 1,
+      "best_val_acc": 0.0924,
+      "test_acc": 0.0892,
+      "train_time_s": 51.62,
+      "test_pred_dist": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        10000,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "seed": 999,
+      "best_epoch": 1,
+      "best_val_acc": 0.1,
+      "test_acc": 0.101,
+      "train_time_s": 51.57,
+      "test_pred_dist": [
+        0,
+        0,
+        0,
+        10000,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "aggregate": {
+    "val_acc_mean": 0.09519999999999999,
+    "val_acc_std": 0.0034097898273451823,
+    "test_acc_mean": 0.09586666666666666,
+    "test_acc_std": 0.004937835783237657
+  },
+  "units": "accuracy in fraction [0,1]",
+  "test_evaluated_once": true,
+  "checkpoint_selection": "validation"
+}

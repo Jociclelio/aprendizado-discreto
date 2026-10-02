@@ -12,17 +12,17 @@ Esta task é a **Etapa 3** da sequência recomendada (relatório, seção 9).
 
 ## Escopo
 
-- [ ] Criar `experiments/run_mnist_full.py` (script versionado) que recria o experimento a partir de uma configuração serializável (JSON).
-- [ ] **Proveniência** (gravar em `results/exp-014-mnist-full/provenance.json`):
+- [x] Criar `experiments/run_mnist_full.py` (script versionado) que recria o experimento a partir de uma configuração serializável (JSON).
+- [x] **Proveniência** (gravar em `results/exp-014-mnist-full/provenance.json`):
   - commit (`git rev-parse HEAD`), estado local (`git status --porcelain`);
   - versões de `numpy`, `torch`, `torchvision`;
   - seed, índices/splits (treino/validação/teste), configuração completa, tempo de execução.
-- [ ] **Split 3-vias**: treino / **validação** / teste. Usar validação para escolher configuração e/ou checkpoint; **reservar teste para a avaliação final única**.
-- [ ] **Múltiplas sementes**: ao menos **3 sementes** na rodada; registrar **cada** execução (não só a melhor).
-- [ ] **Unidades padronizadas**: definir uma unidade canônica (ex.: acurácia em fração [0,1]) e converter; documentar.
-- [ ] **Controle de preprocessing**: registrar explicitamente que a baseline usa padronização MNIST (0.1307/0.3081) e a Rede B usa pixels `[0,1]`; discutir se isso isola o efeito da quantização (não isola, dado que também mudam ativação/perda).
-- [ ] Curvas de treino/validação/teste em `results/exp-014-mnist-full/` (PNG + CSV).
-- [ ] Matriz de confusão final (no teste, única vez) e distribuição de predições.
+- [x] **Split 3-vias**: treino / **validação** / teste. Usar validação para escolher configuração e/ou checkpoint; **reservar teste para a avaliação final única**.
+- [x] **Múltiplas sementes**: ao menos **3 sementes** na rodada; registrar **cada** execução (não só a melhor).
+- [x] **Unidades padronizadas**: definir uma unidade canônica (ex.: acurácia em fração [0,1]) e converter; documentar.
+- [x] **Controle de preprocessing**: registrar explicitamente que a baseline usa padronização MNIST (0.1307/0.3081) e a Rede B usa pixels `[0,1]`; discutir se isso isola o efeito da quantização (não isola, dado que também mudam ativação/perda).
+- [x] Curvas de treino/validação/teste em `results/exp-014-mnist-full/` (PNG + CSV).
+- [x] Matriz de confusão final (no teste, única vez) e distribuição de predições.
 
 ## Especificações técnicas
 
@@ -35,12 +35,12 @@ Esta task é a **Etapa 3** da sequência recomendada (relatório, seção 9).
 
 ## Critérios de aceitação
 
-- [ ] Script implementado em `experiments/run_mnist_full.py` e versionado.
-- [ ] `provenance.json` completo e suficiente para recriar o experimento.
-- [ ] Teste avaliado **uma única vez** por execução (no fim).
-- [ ] ≥ 3 sementes, todas registradas.
-- [ ] Curvas e matriz de confusão salvas em `results/exp-014-mnist-full/`.
-- [ ] Commit `[014]` com mensagem descritiva.
+- [x] Script implementado em `experiments/run_mnist_full.py` e versionado.
+- [x] `provenance.json` completo e suficiente para recriar o experimento.
+- [x] Teste avaliado **uma única vez** por execução (no fim).
+- [x] ≥ 3 sementes, todas registradas.
+- [x] Curvas e matriz de confusão salvas em `results/exp-014-mnist-full/`.
+- [x] Commit `[014]` com mensagem descriptiva.
 
 ## Notas de implementação
 

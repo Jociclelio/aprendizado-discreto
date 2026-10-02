@@ -1,0 +1,45 @@
+{
+  "git_commit": "0dcede8a96c0e8c6602afe20591b2c081e3b4958",
+  "git_status": "?? experiments/run_mnist_full.py\n?? results/accuracy_curve_default.png\n?? results/exp-014-mnist-full/\n?? results/exp-014-test/\n?? results/test-002/",
+  "versions": {
+    "numpy": "2.5.3",
+    "torch": "2.13.0+cu130",
+    "torchvision": "0.28.0+cu130",
+    "python": "3.14.7"
+  },
+  "seed": 999,
+  "config": {
+    "scale": 1.0,
+    "adaptive_radius": true,
+    "scale_factor": 1.0,
+    "levels": 5,
+    "batch_size": 32,
+    "epochs": 3,
+    "decay_rate": null,
+    "decay_shift": null,
+    "decay_per_batch": true,
+    "seeds": [
+      42,
+      123,
+      999
+    ],
+    "train_size": 10000,
+    "val_size": 5000,
+    "test_size": 10000
+  },
+  "split_indices": {
+    "train_idx_hash": 25573,
+    "val_idx_hash": 2677,
+    "test_idx_hash": 0,
+    "train_size": 10000,
+    "val_size": 5000,
+    "test_size": 10000
+  },
+  "architecture": "784->128->64->10",
+  "units": "accuracy in fraction [0,1]",
+  "preprocessing": {
+    "baseline": "MNIST standardization (0.1307, 0.3081)",
+    "rede_B": "pixels [0,1] (normalize=True)",
+    "nota": "mesma topologia NAO isola o efeito da quantizacao (tambem mudam ativacao/perda/entrada)"
+  }
+}
