@@ -1,0 +1,125 @@
+{
+  "timestamp": "2026-10-02T12:10:39.300476+00:00",
+  "experiment": "exp-016-benchmark",
+  "config": {
+    "epochs": 3,
+    "train_size": 10000,
+    "val_size": 5000,
+    "seeds": [
+      42,
+      123,
+      999
+    ]
+  },
+  "results": [
+    {
+      "name": "A (baseline)",
+      "seed": 42,
+      "best_val_acc": 0.9218,
+      "test_acc": 0.9252,
+      "train_time_s": 5.58,
+      "bits_per_param": 32,
+      "memory_params_bytes": 437544,
+      "memory_training_bytes": 1312632
+    },
+    {
+      "name": "B1 (corrigido)",
+      "seed": 42,
+      "best_val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "train_time_s": 51.95,
+      "bits_per_param": 1.58,
+      "memory_params_bytes": 109992,
+      "memory_training_bytes": 985080
+    },
+    {
+      "name": "B+ (refinada)",
+      "seed": 42,
+      "best_val_acc": 0.1022,
+      "test_acc": 0.0892,
+      "train_time_s": 46.29,
+      "bits_per_param": 1.58,
+      "memory_params_bytes": 109992,
+      "memory_training_bytes": 985080
+    },
+    {
+      "name": "A (baseline)",
+      "seed": 123,
+      "best_val_acc": 0.922,
+      "test_acc": 0.9323,
+      "train_time_s": 3.43,
+      "bits_per_param": 32,
+      "memory_params_bytes": 437544,
+      "memory_training_bytes": 1312632
+    },
+    {
+      "name": "B1 (corrigido)",
+      "seed": 123,
+      "best_val_acc": 0.0924,
+      "test_acc": 0.0892,
+      "train_time_s": 52.76,
+      "bits_per_param": 1.58,
+      "memory_params_bytes": 109992,
+      "memory_training_bytes": 985080
+    },
+    {
+      "name": "B+ (refinada)",
+      "seed": 123,
+      "best_val_acc": 0.1096,
+      "test_acc": 0.1009,
+      "train_time_s": 44.51,
+      "bits_per_param": 1.58,
+      "memory_params_bytes": 109992,
+      "memory_training_bytes": 985080
+    },
+    {
+      "name": "A (baseline)",
+      "seed": 999,
+      "best_val_acc": 0.9284,
+      "test_acc": 0.9358,
+      "train_time_s": 3.3,
+      "bits_per_param": 32,
+      "memory_params_bytes": 437544,
+      "memory_training_bytes": 1312632
+    },
+    {
+      "name": "B1 (corrigido)",
+      "seed": 999,
+      "best_val_acc": 0.1,
+      "test_acc": 0.101,
+      "train_time_s": 51.89,
+      "bits_per_param": 1.58,
+      "memory_params_bytes": 109992,
+      "memory_training_bytes": 985080
+    },
+    {
+      "name": "B+ (refinada)",
+      "seed": 999,
+      "best_val_acc": 0.1038,
+      "test_acc": 0.0892,
+      "train_time_s": 43.92,
+      "bits_per_param": 1.58,
+      "memory_params_bytes": 109992,
+      "memory_training_bytes": 985080
+    }
+  ],
+  "counter_width": {
+    "8bits": {
+      "val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "max_counter": 127
+    },
+    "16bits": {
+      "val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "max_counter": 32767
+    }
+  },
+  "memory_accounting": {
+    "baseline_params_bytes": 437544,
+    "B_params_bytes": 109992,
+    "B_training_bytes": 985080,
+    "params_reduction": 3.9779620336024437,
+    "training_overhead": 2.2513850035653555
+  }
+}

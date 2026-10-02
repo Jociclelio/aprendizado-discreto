@@ -47,7 +47,7 @@ Esta task é a **Etapa 4** da sequência recomendada (relatório, seção 9).
 - [x] `margin` não piora a base; homeostase reduz a taxa de colapso (neurônios 0% ou 100%) **sem** sacrificar acurácia.
 - [x] `src/ternary_refined.py` consolida a melhor configuração auditável.
 - [x] Resultados em `results/exp-015-ablacoes/`.
-- [ ] Commit `[015]` com mensagem descritiva.
+- [x] Commit `[015]` com mensagem descritiva.
 
 ## Notas de implementação
 

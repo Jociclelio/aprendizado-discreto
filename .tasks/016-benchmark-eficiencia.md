@@ -12,27 +12,27 @@ Esta task é a **Etapa 5** da sequência recomendada (relatório, seção 9).
 
 ## Escopo
 
-- [ ] Benchmark consolidado em `experiments/run_benchmark.py` (ou `src/compare.py`) comparando, com **mesmo orçamento e split** (014):
+- [x] Benchmark consolidado em `experiments/run_benchmark.py` (ou `src/compare.py`) comparando, com **mesmo orçamento e split** (014):
   1. **Rede A** — baseline float32 (001), checkpoint escolhido por **validação**;
   2. **Rede B Original** — B1 corrigido (012);
   3. **Rede B Refinada (B+)** — melhor configuração de 015 (`src/ternary_refined.py`).
-- [ ] Métricas por rede:
+- [x] Métricas por rede:
   - acurácia (validação e teste final);
   - época de estabilização;
   - **bits por parâmetro** armazenados (A: 32; B pesos: 1 byte int8, ~1,58 bit teórico empacotado; contadores: 8 bytes int64);
   - **frequência de transição** de pesos por epoch (transições efetivas, não tentativas);
   - memória de parâmetros x estado de treinamento (contagem da seção 7 do relatório);
   - tempo de treino (com a ressalva de loops Python/amostra).
-- [ ] **Largura de contador**: ensaiar contadores de 8/16 bits com **política de saturação/overflow** explícita; registrar o efeito na acurácia.
-- [ ] Gráficos multi-painel em `results/exp-016-benchmark/`:
+- [x] **Largura de contador**: ensaiar contadores de 8/16 bits com **política de saturação/overflow** explícita; registrar o efeito na acurácia.
+- [x] Gráficos multi-painel em `results/exp-016-benchmark/`:
   - acurácia (treino/validação/teste);
   - perda;
   - taxa de transição por epoch;
   - distribuição de disparos/ativações.
-- [ ] **Tabela consolidada + relatório de conclusões** em `results/exp-016-benchmark/README.md`:
+- [x] **Tabela consolidada + relatório de conclusões** em `results/exp-016-benchmark/README.md`:
   - onde há ganho, onde há perda, trade-offs;
   - o que é defensável (memória de inferência) x o que **não** é (MACs zero, velocidade) sem implementação especializada.
-- [ ] **Hardware/empacotamento**: avaliar **apenas depois** de existir um modelo treinado confiável; registrar como etapa futura, não como resultado.
+- [x] **Hardware/empacotamento**: avaliar **apenas depois** de existir um modelo treinado confiável; registrar como etapa futura, não como resultado.
 
 ## Especificações técnicas
 
@@ -45,12 +45,12 @@ Esta task é a **Etapa 5** da sequência recomendada (relatório, seção 9).
 
 ## Critérios de aceitação
 
-- [ ] Script de benchmark executado com sucesso e versionado.
-- [ ] Tabela consolidada e relatório de conclusões (com trade-offs) em `results/exp-016-benchmark/README.md`.
-- [ ] Métricas de eficiência (bits, transições, memória, tempo) reportadas com as ressalvas do relatório.
-- [ ] Contadores 8/16 bits ensaiados com política de saturação.
-- [ ] Gráficos em `results/exp-016-benchmark/`.
-- [ ] Commit `[016]` com mensagem descritiva.
+- [x] Script de benchmark executado com sucesso e versionado.
+- [x] Tabela consolidada e relatório de conclusões (com trade-offs) em `results/exp-016-benchmark/README.md`.
+- [x] Métricas de eficiência (bits, transições, memória, tempo) reportadas com as ressalvas do relatório.
+- [x] Contadores 8/16 bits ensaiados com política de saturação.
+- [x] Gráficos em `results/exp-016-benchmark/`.
+- [x] Commit `[016]` com mensagem descritiva.
 
 ## Notas de implementação
 
