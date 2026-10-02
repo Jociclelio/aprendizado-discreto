@@ -1,0 +1,181 @@
+{
+  "timestamp": "2026-10-02T11:50:45.896649+00:00",
+  "experiment": "exp-015-ablacoes",
+  "config": {
+    "scale": 1.0,
+    "adaptive_radius": true,
+    "scale_factor": 1.0,
+    "levels": 5,
+    "batch_size": 32,
+    "epochs": 3,
+    "train_size": 10000,
+    "val_size": 5000,
+    "test_size": 10000,
+    "seeds": [
+      42
+    ]
+  },
+  "ablations": [
+    {
+      "name": "base",
+      "seed": 42,
+      "best_val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "transitions_per_epoch": [
+        19896,
+        0,
+        0
+      ],
+      "train_time_s": 40.41
+    },
+    {
+      "name": "leak_g0.90",
+      "seed": 42,
+      "best_val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "transitions_per_epoch": [
+        19915,
+        0,
+        0
+      ],
+      "train_time_s": 41.01
+    },
+    {
+      "name": "leak_g0.95",
+      "seed": 42,
+      "best_val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "transitions_per_epoch": [
+        19915,
+        0,
+        0
+      ],
+      "train_time_s": 41.05
+    },
+    {
+      "name": "leak_g0.99",
+      "seed": 42,
+      "best_val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "transitions_per_epoch": [
+        19915,
+        0,
+        0
+      ],
+      "train_time_s": 41.03
+    },
+    {
+      "name": "leak_s3",
+      "seed": 42,
+      "best_val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "transitions_per_epoch": [
+        19915,
+        0,
+        0
+      ],
+      "train_time_s": 41.18
+    },
+    {
+      "name": "leak_s4",
+      "seed": 42,
+      "best_val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "transitions_per_epoch": [
+        19915,
+        0,
+        0
+      ],
+      "train_time_s": 41.05
+    },
+    {
+      "name": "leak_s5",
+      "seed": 42,
+      "best_val_acc": 0.0932,
+      "test_acc": 0.0974,
+      "transitions_per_epoch": [
+        19915,
+        0,
+        0
+      ],
+      "train_time_s": 41.19
+    },
+    {
+      "name": "margin_1",
+      "seed": 42,
+      "best_val_acc": 0.1022,
+      "test_acc": 0.098,
+      "transitions_per_epoch": [
+        168146,
+        134101,
+        131680
+      ],
+      "train_time_s": 43.88
+    },
+    {
+      "name": "margin_2",
+      "seed": 42,
+      "best_val_acc": 0.1022,
+      "test_acc": 0.098,
+      "transitions_per_epoch": [
+        163126,
+        125900,
+        125950
+      ],
+      "train_time_s": 44.26
+    },
+    {
+      "name": "margin_5",
+      "seed": 42,
+      "best_val_acc": 0.1002,
+      "test_acc": 0.0958,
+      "transitions_per_epoch": [
+        186297,
+        147984,
+        147994
+      ],
+      "train_time_s": 44.8
+    },
+    {
+      "name": "homeo_0.25",
+      "seed": 42,
+      "best_val_acc": 0.0924,
+      "test_acc": 0.0849,
+      "transitions_per_epoch": [
+        57829,
+        0,
+        0
+      ],
+      "train_time_s": 42.2
+    },
+    {
+      "name": "margin_2+homeo",
+      "seed": 42,
+      "best_val_acc": 0.1022,
+      "test_acc": 0.098,
+      "transitions_per_epoch": [
+        193387,
+        74462,
+        165024
+      ],
+      "train_time_s": 46.06
+    },
+    {
+      "name": "margin_2+homeo+leak_g0.95",
+      "seed": 42,
+      "best_val_acc": 0.0938,
+      "test_acc": 0.1009,
+      "transitions_per_epoch": [
+        196556,
+        130345,
+        94696
+      ],
+      "train_time_s": 46.02
+    }
+  ],
+  "best_config": {
+    "name": "margin_1",
+    "best_val_acc": 0.1022,
+    "test_acc": 0.098
+  }
+}

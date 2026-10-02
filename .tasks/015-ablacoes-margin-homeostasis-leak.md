@@ -12,22 +12,22 @@ Esta task é a **Etapa 4** da sequência recomendada (relatório, seção 9).
 
 ## Escopo
 
-- [ ] **Ablação do leak** (isolado): reexaminar γ ∈ {0.90, 0.95, 0.99} e shift ∈ {3,4,5} com o B1 corrigido, medindo oscilação **e** desempenho (não apenas magnitude de `|C|`).
-- [ ] **Ablação da margem** (isolada): perda multiclasse
+- [x] **Ablação do leak** (isolado): reexaminar γ ∈ {0.90, 0.95, 0.99} e shift ∈ {3,4,5} com o B1 corrigido, medindo oscilação **e** desempenho (não apenas magnitude de `|C|`).
+- [x] **Ablação da margem** (isolada): perda multiclasse
   `L = max(0, margin + max_{j≠y} z_j − z_y)` sobre `z_out`.
   - O subgradiente já é em relação ao **score**; **não** multiplicar novamente pelo surrogate do degrau de saída.
   - O surrogate continua **nas ocultas** discretas.
   - `margin` ∈ {1, 2, 5}.
-- [ ] **Ablação da homeostase** (isolada): ajuste do bias para manter a taxa de disparo perto de um alvo.
+- [x] **Ablação da homeostase** (isolada): ajuste do bias para manter a taxa de disparo perto de um alvo.
   - Definir explicitamente **frequência** de ajuste (a cada M batches/epoch), **tolerância** (ε) e **interação com o bias supervisionado** (012).
   - Ajustar **ocultas** e **saída** como hipóteses separadas (não forçar a mesma taxa nas 10 classes).
-- [ ] **Combinções justificadas**: margem+homeostase, e (se promissor) +leak, com a mesma base.
-- [ ] **Controles de diagnóstico** (para separar capacidade de representação de dificuldade de otimização):
+- [x] **Combinações justificadas**: margem+homeostase, e (se promissor) +leak, com a mesma base.
+- [x] **Controles de diagnóstico** (para separar capacidade de representação de dificuldade de otimização):
   - Rede ternária treinada por um método estabelecido com pesos latentes float;
-  - Controle que treina apenas a **readout** sobre features ocultas fixas.
-- [ ] Fixar **orçamento** (mesmo nº de passos/epochs) e **conjunto de seleção** (validação de 014) para todas as ablações.
-- [ ] Somente se houver uma **diferença operacional definida**, expandir para B2/B3 (ver `[008]`).
-- [ ] Salvar resultados em `results/exp-015-ablacoes/` e consolidar a melhor configuração em `src/ternary_refined.py`.
+  - Controle que treina apenas a **readout** sobre features ocultas fixa.
+- [x] Fixar **orçamento** (mesmo nº de passos/epochs) e **conjunto de seleção** (validação de 014) para todas as ablações.
+- [x] Somente se houver uma **diferença operacional definida**, expandir para B2/B3 (ver `[008]`).
+- [x] Salvar resultados em `results/exp-015-ablacoes/` e consolidar a melhor configuração em `src/ternary_refined.py`.
 
 ## Especificações técnicas
 
@@ -41,12 +41,12 @@ Esta task é a **Etapa 4** da sequência recomendada (relatório, seção 9).
 
 ## Critérios de aceitação
 
-- [ ] Cada mecanismo testado **isoladamente** e a combinação testada, com mesmo orçamento.
-- [ ] Métricas por configuração: acurácia (validação/teste), taxa de neurônios **inativos/saturados**, oscilação, Δacurácia vs. base.
+- [x] Cada mecanismo testado **isoladamente** e a combinação testada, com mesmo orçamento.
+- [x] Métricas por configuração: acurácia (validação/teste), taxa de neurônios **inativos/saturados**, oscilação, Δacurácia vs. base.
   - **Não** exigir literalmente "nenhum neurônio a 0%/100%"; medir a distribuição.
-- [ ] `margin` não piora a base; homeostase reduz a taxa de colapso (neurônios 0% ou 100%) **sem** sacrificar acurácia.
-- [ ] `src/ternary_refined.py` consolida a melhor configuração auditável.
-- [ ] Resultados em `results/exp-015-ablacoes/`.
+- [x] `margin` não piora a base; homeostase reduz a taxa de colapso (neurônios 0% ou 100%) **sem** sacrificar acurácia.
+- [x] `src/ternary_refined.py` consolida a melhor configuração auditável.
+- [x] Resultados em `results/exp-015-ablacoes/`.
 - [ ] Commit `[015]` com mensagem descritiva.
 
 ## Notas de implementação
