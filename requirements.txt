@@ -1,0 +1,7 @@
+# Dependencias do repositorio (017: streamlit e a unica dependencia nova).
+numpy
+matplotlib
+torch
+torchvision
+scikit-learn
+streamlit

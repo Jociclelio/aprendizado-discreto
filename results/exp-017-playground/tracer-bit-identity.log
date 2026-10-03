@@ -1,0 +1,12 @@
+============================================================
+Teste — tracer bit-identidade B1 vs train_sample_online
+============================================================
+   amostra 0: loss=0.2000 sel=0 trans=0
+   amostra 1: loss=0.6000 sel=0 trans=0
+   amostra 2: loss=0.5000 sel=0 trans=0
+   amostra 3: loss=0.3000 sel=0 trans=0
+   amostra 4: loss=0.3000 sel=0 trans=0
+   B2: sel=1090 k_info={'kind': 'b2-topk-per-layer', 'k_per_layer': [1003, 81, 6]}
+   B3: sel=1091 k_info={'kind': 'b3-topk-global', 'k_total': 1091}
+   B1 expoe z/fake/q_fake/deltas/dw/C/mask/W_after + metrics
+Todos os testes passaram (bit-identico ao CLI)!

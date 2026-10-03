@@ -1,0 +1,7 @@
+2026-10-03 17:46:38.793 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+runner B1: batches=4 loss=0.3313 acc500=0.1340
+cmp B1: acc500=0.1340 trans=21544 bloq=9906
+cmp B2: acc500=0.1000 trans=52874 bloq=24865
+cmp B3: acc500=0.1000 trans=60635 bloq=28405
+figs: 8 PNGs em /mnt/ssd/ideia/results/exp-017-playground/figs
+SMOKE-017 OK

@@ -181,6 +181,23 @@ ideia/
 - NumPy
 - Matplotlib (plotting)
 - scikit-learn (métricas)
+- Streamlit (só para o playground 017) — ver `requirements.txt`
+
+## Playground (017)
+
+Stepper interativo amostra a amostra do treino B1/B2/B3 sobre dígitos
+reais do MNIST — mesma matemática do CLI (CONTRATO_012, bit-idêntica):
+
+```bash
+pip install -r requirements.txt
+streamlit run src/playground/app.py
+```
+
+Abas: **Stepper** (7 estágios `z → erro → fake → q_fake → deltas → máscara →
+update/reset`), **Inspetor de camada** (heatmaps amostrados, histograma de `z`
+com cone do raio adaptativo, distribuição +1/0/-1), **Runner curto**
+(cap 2000 amostras; full MNIST fica no CLI) e **Comparador B1/B2/B3**
+(mesmo seed + mesmo subset, curvas sobrepostas).
 
 ## Licença
 

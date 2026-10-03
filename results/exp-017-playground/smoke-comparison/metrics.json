@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-10-03T20:46:42.974482+00:00",
+  "experiment": "exp-unknown",
+  "n": 96,
+  "table": [
+    {
+      "variante": "B1",
+      "acc500_final": 0.134,
+      "transicoes": 21544,
+      "bloqueios": 9906,
+      "%bloq": 31.5
+    },
+    {
+      "variante": "B2",
+      "acc500_final": 0.1,
+      "transicoes": 52874,
+      "bloqueios": 24865,
+      "%bloq": 23.76
+    },
+    {
+      "variante": "B3",
+      "acc500_final": 0.1,
+      "transicoes": 60635,
+      "bloqueios": 28405,
+      "%bloq": 27.12
+    }
+  ]
+}

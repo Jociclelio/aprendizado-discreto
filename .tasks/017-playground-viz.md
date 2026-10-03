@@ -12,20 +12,20 @@ Decisões fechadas com o usuário: granularidade **amostra a amostra**, stack **
 
 ## Escopo
 
-- [ ] **017.1 Tracer instrumentado** em `src/playground/tracer.py`:
-  - [ ] Envolve `TernaryNet.forward_with_scores`, `triangular_fake_grad`, `quantize_fake_grad`, `propagate_delta_with_fake_quantized`, `CounterManager` e `train_sample_online` (B1) **sem alterar `src/` existente**.
-  - [ ] Retorna `Trace` dict por amostra: `x, label, z_l, a_l, scores, pred, error, loss, fake_cont, q_fake, deltas[l], dw_float, dw_int, quant_stats, Cw/Cb antes/depois, thr_w/thr_b, mask, selecionados/tentativas/bloqueios/transições (pesos e bias)`.
-  - [ ] Adaptadores `trace_b2` / `trace_b3` que trocam **só** a função de máscara (Top-K por camada / por rede via `counter_rules.py`) mantendo o resto idêntico.
-  - [ ] Teste `python -m src.playground.tracer`: bit-identidade com `train_sample_online` (mesmos `W`, `C`, métricas para mesma seed/amostra).
-- [ ] **017.2 App Streamlit + inspetor** em `src/playground/{app,state,plots}.py`:
-  - [ ] Aba 1 — Stepper: sidebar (variante, `scale`, `radius/adaptativo c`, `levels {3,5,7}`, `seed`, índice MNIST/aleatório, Prev/Next/Step/Replay); painel nos 7 estágios do pipeline na ordem do CONTRATO_012.
-  - [ ] Aba 2 — Inspetor de camada L0/L1/L2: heatmaps **amostrados** (nunca matriz cheia; ex. crop 32×32 ou top-|C| determinístico), histograma de `z` com cone do raio adaptativo (`get_adaptive_radius`/`get_layer_radii`), distribuição `+1/0/-1` via `net.get_stats()`.
-  - [ ] `state.py`: `session_state` para net+cm (botão Reset com seed) + `@st.cache_data` para `load_mnist(normalize=True)`.
-  - [ ] `plots.py`: só matplotlib (Agg, padrão do repo).
-- [ ] **017.3 Runner + comparador + polish**:
-  - [ ] Aba 3 — Runner curto: N amostras (default 200–2000, **cap 2000** no interativo; full MNIST fica no CLI), live chart loss/acc/transições por batch (reusa `train_batch` + `evaluate`), log textual igual ao CLI.
-  - [ ] Aba 4 — Comparador B1/B2/B3: mesmo seed + mesmo subset, curvas sobrepostas (reusa `plot_comparison_curves` de `src/utils.py`), tabela acc final / transições / % bloqueios.
-  - [ ] `requirements`/docs: acrescentar `streamlit` (única dependência nova), seção no README, smoke test e screenshot/log em `results/exp-017-playground/`.
+- [x] **017.1 Tracer instrumentado** em `src/playground/tracer.py`:
+  - [x] Envolve `TernaryNet.forward_with_scores`, `triangular_fake_grad`, `quantize_fake_grad`, `propagate_delta_with_fake_quantized`, `CounterManager` e `train_sample_online` (B1) **sem alterar `src/` existente**.
+  - [x] Retorna `Trace` dict por amostra: `x, label, z_l, a_l, scores, pred, error, loss, fake_cont, q_fake, deltas[l], dw_float, dw_int, quant_stats, Cw/Cb antes/depois, thr_w/thr_b, mask, selecionados/tentativas/bloqueios/transições (pesos e bias)`.
+  - [x] Adaptadores `trace_b2` / `trace_b3` que trocam **só** a função de máscara (Top-K por camada / por rede via `counter_rules.py`) mantendo o resto idêntico.
+  - [x] Teste `python -m src.playground.tracer`: bit-identidade com `train_sample_online` (mesmos `W`, `C`, métricas para mesma seed/amostra).
+- [x] **017.2 App Streamlit + inspetor** em `src/playground/{app,state,plots}.py`:
+  - [x] Aba 1 — Stepper: sidebar (variante, `scale`, `radius/adaptativo c`, `levels {3,5,7}`, `seed`, índice MNIST/aleatório, Prev/Next/Step/Replay); painel nos 7 estágios do pipeline na ordem do CONTRATO_012.
+  - [x] Aba 2 — Inspetor de camada L0/L1/L2: heatmaps **amostrados** (nunca matriz cheia; ex. crop 32×32 ou top-|C| determinístico), histograma de `z` com cone do raio adaptativo (`get_adaptive_radius`/`get_layer_radii`), distribuição `+1/0/-1` via `net.get_stats()`.
+  - [x] `state.py`: `session_state` para net+cm (botão Reset com seed) + `@st.cache_data` para `load_mnist(normalize=True)`.
+  - [x] `plots.py`: só matplotlib (Agg, padrão do repo).
+- [x] **017.3 Runner + comparador + polish**:
+  - [x] Aba 3 — Runner curto: N amostras (default 200–2000, **cap 2000** no interativo; full MNIST fica no CLI), live chart loss/acc/transições por batch (reusa `train_batch` + `evaluate`), log textual igual ao CLI.
+  - [x] Aba 4 — Comparador B1/B2/B3: mesmo seed + mesmo subset, curvas sobrepostas (reusa `plot_comparison_curves` de `src/utils.py`), tabela acc final / transições / % bloqueios.
+  - [x] `requirements`/docs: acrescentar `streamlit` (única dependência nova), seção no README, smoke test e screenshot/log em `results/exp-017-playground/`.
 
 ## Especificações técnicas
 
@@ -38,12 +38,12 @@ Decisões fechadas com o usuário: granularidade **amostra a amostra**, stack **
 
 ## Critérios de aceitação
 
-- [ ] `streamlit run src/playground/app.py` abre sem erro.
-- [ ] Step de 1 amostra exibe os 7 estágios com números **iguais** aos do CLI (teste de bit-identidade passa).
-- [ ] Troca B1 → B2 → B3 muda máscara/selecionados/transições de forma visível e correta.
-- [ ] Dígito MNIST clicável: imagem 28×28 + forward (`z`, firing, scores, pred) + backward completo.
-- [ ] Runner curto executa sem travar (≤ cap) e salva artefatos em `results/exp-017-playground/`.
-- [ ] Commit `[017]` com mensagem descritiva.
+- [x] `streamlit run src/playground/app.py` abre sem erro.
+- [x] Step de 1 amostra exibe os 7 estágios com números **iguais** aos do CLI (teste de bit-identidade passa).
+- [x] Troca B1 → B2 → B3 muda máscara/selecionados/transições de forma visível e correta.
+- [x] Dígito MNIST clicável: imagem 28×28 + forward (`z`, firing, scores, pred) + backward completo.
+- [x] Runner curto executa sem travar (≤ cap) e salva artefatos em `results/exp-017-playground/`.
+- [x] Commit `[017]` com mensagem descritiva.
 
 ## Notas de implementação
 
