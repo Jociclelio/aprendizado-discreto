@@ -127,7 +127,8 @@ ideia/
 │   ├── 013-prova-aprendizado-subconjunto.md
 │   ├── 014-ensaio-mnist-auditable.md
 │   ├── 015-ablacoes-margin-homeostasis-leak.md
-│   └── 016-benchmark-eficiencia.md
+│   ├── 016-benchmark-eficiencia.md
+│   └── 017-playground-viz.md
 ├── src/
 │   ├── baseline.py        ← Rede A (MLP float32 + backprop)
 │   ├── ternary_net.py     ← Rede B (pesos ternários + contadores)
@@ -139,6 +140,11 @@ ideia/
 │   ├── reset_policies.py  ← Políticas de zeragem de contadores
 │   ├── fake_gradient.py   ← Função fake gradient triangular + quantização
 │   ├── compare.py         ← Comparação qualitativa final
+│   ├── playground/      ← Interface web Streamlit (017: stepper amostra-a-amostra B1/B2/B3)
+│   │   ├── app.py       ← UI (stepper, inspetor, runner, comparador)
+│   │   ├── tracer.py    ← instrumentação bit-idêntica ao treino (só observa)
+│   │   ├── state.py     ← session_state + cache MNIST
+│   │   └── plots.py     ← heatmaps/histogramas (matplotlib)
 │   └── utils.py           ← Utilitários (MNIST loader, plotting, etc.)
 ├── experiments/
 │   └── ...                ← scripts de execução de cada configuração
@@ -166,6 +172,7 @@ ideia/
 | 014 | `014-ensaio-mnist-auditable.md` | Ensaio MNIST auditável (proveniência, validação, ≥3 sementes) | 015 |
 | 015 | `015-ablacoes-margin-homeostasis-leak.md` | Ablações: margem, homeostase e leak sobre o B1 corrigido | 016 |
 | 016 | `016-benchmark-eficiencia.md` | Benchmark final + validação da proposta de eficiência | — |
+| 017 | `017-playground-viz.md` | Playground Streamlit: stepper amostra-a-amostra B1/B2/B3 sobre MNIST | — |
 
 ## Dependências
 
