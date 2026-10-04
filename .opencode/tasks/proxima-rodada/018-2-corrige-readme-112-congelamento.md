@@ -1,6 +1,6 @@
 # Task 018-2: corrige residual README:112 congelamento
 
-Estado: feita
+Estado: fechada
 Depende de: 018-1
 Origem: 018-1 (correção; preserva entregas 46ade96 e ecb4350)
 
@@ -35,13 +35,13 @@ Corrigir apenas a generalização falsa residual em `README.md:112` (“B1/B+ se
 1/10 — Edição de uma frase em um arquivo com oráculo e padrão de redação já fixados em 018-1; sem código nem ambiente.
 
 ### Revisão
-- Orquestrador: —
-- Alvo: base ecb435091eae6988db10d9a6bcc4664479b89357, entrega c01ec02
-- Avaliações: —
-- Nota final: _/10
-- Parecer: —
-- Decisão: pendente
-- Reversão: não se aplica
-- Próximo passo: 019 (testes + ambiente)
+- Orquestrador: task-master (Muse Spark, opencode/muse-spark-1.3-contributor-free)
+- Alvo: base ecb435091eae6988db10d9a6bcc4664479b89357, entrega c01ec02e4f44b5081893ce136458e60071d421cf, registro 6da0ae6b89407fc02939cd76ee25e34c228040bc (árvore conferida; entrega isolada em 1 arquivo documental, sem código; HEAD = registro, só untracked alheios)
+- Avaliações: task-reviewer-muse (muse-spark-1.3): 10/10, C1 ok, C2 ok, C3 ok; task-reviewer-nemotron (nemotron-3-ultra): 10/10, C1–C3 ok; task-reviewer-terra (gpt-5.6-terra): 10/10, C1–C3 ok. Sem falha de revisor, sem substituição.
+- Nota final: 10/10 — residual universal de README:112 eliminado com redação exata ao oráculo (base/leak/homeo_0.25 congelam, margem/combinações transitam, ~9–10% sem sucesso), entrega isolada em 1 commit de 1 arquivo e escopo respeitado (46ade96 e ecb4350 preservados); não é média automática, é convergência unânime sem ressalvas.
+- Parecer: C1 comprovado (unânime: c01ec02:README.md:112 distingue base [19896,0,0]/leak ~[19915,0,0]/homeo_0.25 [57829,0,0] que congelam de margem/combinações que transitam, ex. margin_1 [168146,134101,131680], mantendo ~9–10% sem inferir sucesso e consistente com README.md:9-10). C2 comprovado (unânime: git show c01ec02 --stat = 1 file changed, 1 insertion(+), 1 deletion(-), só README.md; revisao-f5d3a5a.md, results/INDEX.md, .tasks/INDEX.md, src/, experiments/, results/exp-*/ intactos; intervalo ecb4350..c01ec02 contém os documentais intermediários 567b96f/68aab55/961ccc6, fora da entrega isolada). C3 comprovado (unânime: nenhum .tasks/007–017 tocado; links locais válidos). Sem divergências e sem Corretude pendente.
+- Decisão: fechar
+- Reversão: não se aplica — correção preserva entregas 46ade96 e ecb4350
+- Próximo passo: 019-estrutura-testes-e-ambiente (liberada; família 018 resolvida por subtasks)
 
 Plano: [plan.md](../../plans/proxima-rodada/plan.md)

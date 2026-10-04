@@ -1,6 +1,6 @@
 # Task 018-1: corrige interpretação 015 congelamento
 
-Estado: aguardando subtasks
+Estado: resolvida por subtasks (018-2 fechada 10/10; nota 8/10 e decisão corrigir originais preservadas)
 Depende de: 018
 Origem: 018 (correção; preserva entrega 46ade96)
 
@@ -42,6 +42,6 @@ Corrigir apenas a generalização falsa do congelamento universal em 015/B+ sem 
 - Parecer: C1 comprovado (unânime: revisao-f5d3a5a.md:64 distingue base/6× leak/homeo_0.25 que congelam de margem/combinações que transitam, ex. margin_1 [168146,134101,131680], sem inferir sucesso). C2 comprovado (unânime: results/INDEX.md:20,29 e .tasks/INDEX.md:24 qualificados como só base/leak/homeo_0.25 vs margem que transita, verificáveis por git show ecb4350:results/exp-015-ablacoes/metrics.json). C4 comprovado (unânime: diff base..entrega só os 4 documentais; .tasks/007–017 intactos salvo INDEX.md; links locais válidos). Divergência em C3: muse+terra apontam residual falso em README:112 (“B1/B+ seguem ~9–10% com congelamento após a 1ª epoch (013/014/015/016…)”, herdado de 46ade96 e fora do diff) que generaliza 015 como congelamento universal contra o oráculo (margin_1/2/5 e margin_2+homeo transitam nas 3 epochs) e contra o próprio README:9-10 corrigido; C3 literal (:9-10 + árvore intacta) comprovado, C3 nível-arquivo parcial. Nemotron 10 não verifica esse residual.
 - Decisão: corrigir
 - Reversão: não se aplica — correção preserva entrega ecb4350
-- Próximo passo: 018-2-corrige-readme-112-congelamento (correção delimitada, pendente de criação), depois libera 019
+- Próximo passo: 018-2-corrige-readme-112-congelamento fechada (10/10, sem pendências); libera 019
 
 Plano: [plan.md](../../plans/proxima-rodada/plan.md)

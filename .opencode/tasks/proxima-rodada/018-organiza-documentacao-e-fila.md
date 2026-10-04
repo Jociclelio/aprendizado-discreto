@@ -1,6 +1,6 @@
 # Task 018: organiza documentação e reconcilia a fila
 
-Estado: aguardando subtasks
+Estado: resolvida por subtasks (018-1 8/10 + 018-2 fechada 10/10; nota 7/10 e decisão corrigir originais preservadas)
 Depende de: nenhuma
 Origem: nenhuma
 
@@ -45,6 +45,6 @@ Reconciliar documentação e fila histórica sem implementar código novo nem re
 - Parecer: C1 comprovado (muse+nemotron+terra: revisao-f5d3a5a.md existe, §2 cita fontes, README linka). C3 comprovado (unânime: 008/009 preservados com `[ ]`, diff vazio nas históricas, destinos 008→020/021/025 e 009→026/027). Divergência essencial em 015: terra apontou transições não nulas em epochs 2–3 para margin/combinações vs. universal `[~19900,0,0]`; muse confirmou em esclarecimento que só leu base/leak (`base [19896,0,0]`) e generalizou indevidamente, verificando depois no SHA da entrega `margin_1 [168146,134101,131680]`, `margin_2 [163126,125900,125950]`, `margin_5 [186297,147984,147994]`, `margin_2+homeo [193387,74462,165024]` — logo são falsas como universais `revisao-f5d3a5a.md:64`, `results/INDEX.md:20,29`, `.tasks/INDEX.md:24`, `README.md:9-10`; núcleo marginal mantido (margin_2 ~0.10 vs base ~0.09). Nemotron 10 superestima por não verificar as 13 configs. Ressalvas menores (muse): `exp-007` dito “não existe” quando é dir vazio não-rastreado como 008/009; link `.opencode/plans/...` untracked, só em disco no SHA da entrega.
 - Decisão: corrigir
 - Reversão: não se aplica — correção preserva entrega 46ade96
-- Próximo passo: 018-1-corrige-interpretacao-015-congelamento (pendente de criação), depois libera 019
+- Próximo passo: família resolvida (018-1 8/10 + 018-2 fechada 10/10); libera 019
 
 Plano: [plan.md](../../plans/proxima-rodada/plan.md)
