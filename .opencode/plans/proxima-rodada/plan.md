@@ -45,7 +45,7 @@ Nenhuma para o planejamento. Questões científicas (regra de atualização, gen
 |---|---|---|---|
 | 1 | [018-organiza-documentacao-e-fila.md](../../tasks/proxima-rodada/018-organiza-documentacao-e-fila.md) | nenhuma | aguardando subtasks (018-1 revisada 8/10; correção 018-2 pendente) |
 | 1.1 | [018-1-corrige-interpretacao-015-congelamento.md](../../tasks/proxima-rodada/018-1-corrige-interpretacao-015-congelamento.md) | 018 | aguardando subtasks (revisada 8/10, corrigir via 018-2) |
-| 1.2 | [018-2-corrige-readme-112-congelamento.md](../../tasks/proxima-rodada/018-2-corrige-readme-112-congelamento.md) | 018-1 | pendente (criação pendente neste ciclo) |
+| 1.2 | [018-2-corrige-readme-112-congelamento.md](../../tasks/proxima-rodada/018-2-corrige-readme-112-congelamento.md) | 018-1 | pendente |
 | 2 | [019-estrutura-testes-e-ambiente.md](../../tasks/proxima-rodada/019-estrutura-testes-e-ambiente.md) | 018 família (018 + 018-1 + 018-2) | pendente |
 | 3 | [020-versiona-contrato-algoritmico.md](../../tasks/proxima-rodada/020-versiona-contrato-algoritmico.md) | 019 | pendente |
 | 4 | [021-unifica-passo-de-treinamento.md](../../tasks/proxima-rodada/021-unifica-passo-de-treinamento.md) | 020 | pendente |
