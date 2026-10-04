@@ -1,6 +1,6 @@
 # Task 018-2: corrige residual README:112 congelamento
 
-Estado: pendente
+Estado: feita
 Depende de: 018-1
 Origem: 018-1 (correção; preserva entregas 46ade96 e ecb4350)
 
@@ -15,16 +15,16 @@ Corrigir apenas a generalização falsa residual em `README.md:112` (“B1/B+ se
 - `AGENTS.md` — convenção de fila e commits.
 
 ## Corretude
-- [ ] C1 — `README.md:112` não afirma congelamento universal de 015/B+; distingue quem congela (base/6× leak/`homeo_0.25`) de margem/combinações que transitam, com os vetores do oráculo, mantendo ~9–10% sem inferir sucesso e consistente com `README.md:9-10`.
-- [ ] C2 — Diff da entrega restrito a `README.md:112` (uma frase); `docs/reports/revisao-f5d3a5a.md`, `results/INDEX.md`, `.tasks/INDEX.md`, `src/`, `experiments/`, `results/exp-*/` intactos; `git diff <base-018-2>..<entrega-018-2> --stat` comprova.
-- [ ] C3 — Nenhum `.tasks/007–017` reescrito; links locais verificados.
+- [x] C1 — `README.md:112` não afirma congelamento universal de 015/B+; distingue quem congela (base/6× leak/`homeo_0.25`) de margem/combinações que transitam, com os vetores do oráculo, mantendo ~9–10% sem inferir sucesso e consistente com `README.md:9-10`.
+- [x] C2 — Diff da entrega restrito a `README.md:112` (uma frase); `docs/reports/revisao-f5d3a5a.md`, `results/INDEX.md`, `.tasks/INDEX.md`, `src/`, `experiments/`, `results/exp-*/` intactos; `git diff <base-018-2>..<entrega-018-2> --stat` comprova.
+- [x] C3 — Nenhum `.tasks/007–017` reescrito; links locais verificados.
 
 ## Execução
 - Modelo: —
-- Base: —
-- Entrega: —
-- Arquivos da entrega: —
-- Evidências: —
+- Base: ecb435091eae6988db10d9a6bcc4664479b89357
+- Entrega: c01ec02
+- Arquivos da entrega: README.md
+- Evidências: análise estática; oráculo `results/exp-015-ablacoes/metrics.json` (base [19896,0,0], leak ~[19915,0,0] ×6, homeo_0.25 [57829,0,0] vs margin_1 [168146,134101,131680], margin_2 [163126,125900,125950], margin_5 [186297,147984,147994], margin_2+homeo [193387,74462,165024]); `git diff ecb4350..c01ec02 --stat` = 1 file changed, 1 insertion(+), 1 deletion(-); sem código novo, sem reexecução
 
 ## Notas
 
@@ -32,16 +32,16 @@ Corrigir apenas a generalização falsa residual em `README.md:112` (“B1/B+ se
 1/10 — Edição de uma frase em um arquivo com oráculo e padrão de redação já fixados em 018-1; sem código nem ambiente.
 
 ### Dificuldade sentida
-_/10 —
+1/10 — Edição de uma frase em um arquivo com oráculo e padrão de redação já fixados em 018-1; sem código nem ambiente.
 
 ### Revisão
 - Orquestrador: —
-- Alvo: —
+- Alvo: base ecb435091eae6988db10d9a6bcc4664479b89357, entrega c01ec02
 - Avaliações: —
 - Nota final: _/10
 - Parecer: —
 - Decisão: pendente
 - Reversão: não se aplica
-- Próximo passo: —
+- Próximo passo: 019 (testes + ambiente)
 
 Plano: [plan.md](../../plans/proxima-rodada/plan.md)
