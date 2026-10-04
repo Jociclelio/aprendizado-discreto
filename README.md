@@ -7,7 +7,10 @@
 > (execução × interpretação). Análise externa preservada:
 > `astra-relatório-commit-6f47914.md`.
 > Leitura curta do estado atual: baseline A ~92–93% de teste; B1/B+ ~9–10%
-> com congelamento após a 1ª epoch (resultado negativo documentado, não
+> (base, leak e `homeo_0.25` congelam após a 1ª epoch — `base [19896,0,0]`,
+> leak `~[19915,0,0]`, `homeo_0.25 [57829,0,0]` —; variantes com margem/
+> combinações transitam nas 3 epochs, ex. `margin_1 [168146,134101,131680]`,
+> mas seguem ~9–10%; resultado negativo documentado, não
 > baseline de capacidade). Treinadores B2/B3 independentes **não existem**
 > (008 pendente, destino formal em 018); `src/compare.py` **não existe**.
 

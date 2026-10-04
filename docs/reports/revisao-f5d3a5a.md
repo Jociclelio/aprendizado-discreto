@@ -24,7 +24,7 @@
 | `.tasks/012-repara-b1-contrato-matematico.md` + `results/exp-012-b1-reparo/{NOTAS.md,metrics.json,run_012_checks.py}` | contrato CONTRATO_012, 22/22 checks, casos mínimos 1.0 / +1 |
 | `.tasks/013-prova-aprendizado-subconjunto.md` + `results/exp-013-small-subset/{REPORT.md,metrics.json,step_log.json,subset.json}` | ramo FALHA explícito: 0.1250 → 0.1562 vs majoritário 0.1562; surrogate de saída zera no passo 32 |
 | `.tasks/014-ensaio-mnist-auditable.md` + `results/exp-014-mnist-full/{metrics.json,curves.csv,provenance_seed{42,123,999}.json,confusion_matrix.png}` | 3 sementes, split 10k/5k/10k, colapso de predição (seed 42: 10000/10000 → classe 8) |
-| `.tasks/015-ablacoes-margin-homeostasis-leak.md` + `results/exp-015-ablacoes/metrics.json` + `src/ternary_refined.py` | 13 configs; `margin_2` val 0.1022/test 0.098 vs base 0.0932/0.0974; `homeo_0.25` 0.0924/0.0849; transições `[~19900, 0, 0]` |
+| `.tasks/015-ablacoes-margin-homeostasis-leak.md` + `results/exp-015-ablacoes/metrics.json` + `src/ternary_refined.py` | 13 configs; `margin_2` val 0.1022/test 0.098 vs base 0.0932/0.0974; `homeo_0.25` 0.0924/0.0849; congelam após epoch 1 só base/leak/`homeo_0.25` (`base [19896,0,0]`, leak `~[19915,0,0]`, `homeo_0.25 [57829,0,0]`); margem/combinações transitam nas 3 epochs (ex.: `margin_1 [168146,134101,131680]`) |
 | `.tasks/016-benchmark-eficiencia.md` + `results/exp-016-benchmark/{metrics.json,benchmark.csv,benchmark.png,README.md}` | A ~92–93% vs B1/B+ ~9–10%; 3.98× inferência, 2.25× treino; 8/16 bits idênticos |
 | `.tasks/017-playground-viz.md` + `results/exp-017-playground/{tracer-bit-identity.log,smoke.log,figs/,smoke-runner-b1/,smoke-comparison/}` + `src/playground/{tracer,app,state,plots}.py` | bit-identidade passa; smoke runner/comparador OK; B2/B3 só como máscara no tracer |
 | `src/{baseline,counter_rules,fake_gradient,reset_policies,ternary_b1,ternary_net,ternary_refined,ablation,utils}.py`, `experiments/run_{small_subset,mnist_full,ablations,benchmark}.py`, `requirements.txt` | árvore real (seção 6) |
@@ -61,7 +61,7 @@ Legenda: **Exec** = trabalho executado com artefato; **Evid** = artefato version
 ### 3.4 [015] Ablações — execução completa, hipótese só parcialmente sustentada
 
 - Todos os critérios `[x]` com evidência: 13 configs em `metrics.json`, `src/ternary_refined.py` consolidado.
-- Leitura fiel dos números (seed 42): `margin_2` 0.1022/0.098 vs base 0.0932/0.0974 (ganho marginal, "não piora" sustentado no limite); `homeo_0.25` 0.0924/0.0849 (**piora**; critério "reduz colapso sem sacrificar acurácia" **não demonstrado** — transições seguem `[~19900, 0, 0]`, i.e. congela após epoch 1 em todas as configs).
+- Leitura fiel dos números (seed 42): `margin_2` 0.1022/0.098 vs base 0.0932/0.0974 (ganho marginal, "não piora" sustentado no limite); `homeo_0.25` 0.0924/0.0849 (**piora**; critério "reduz colapso sem sacrificar acurácia" **não demonstrado** — congelam após epoch 1 só base, as 6 leak e `homeo_0.25` (`base [19896,0,0]`, leak `~[19915,0,0]`, `homeo_0.25 [57829,0,0]`); margem/combinações **não** congelam — `margin_1 [168146,134101,131680]`, `margin_2 [163126,125900,125950]`, `margin_5 [186297,147984,147994]`, `margin_2+homeo [193387,74462,165024]` — mas seguem ~9–10%, sem sucesso científico).
 - **Veredito:** o `[x]` marca *teste isolado executado*, não *hipótese confirmada*. Reavaliação condicionada a 024 fica para 025.
 
 ### 3.5 [016] Benchmark — execução completa, conclusão de trade-off (não de superioridade)
