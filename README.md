@@ -1,5 +1,16 @@
 # Rede Neural Ternária com Aprendizado por Contadores Discretos
 
+> **Estado do repositório (revisão 018):** a proposta científica está em
+> `docs/ideia.md` (hipóteses, não resultados). O que este repo **efetivamente**
+> contém e mede está auditado em `docs/reports/revisao-f5d3a5a.md`, com
+> índices em `.tasks/INDEX.md` (tasks × evidências) e `results/INDEX.md`
+> (execução × interpretação). Análise externa preservada:
+> `astra-relatório-commit-6f47914.md`.
+> Leitura curta do estado atual: baseline A ~92–93% de teste; B1/B+ ~9–10%
+> com congelamento após a 1ª epoch (resultado negativo documentado, não
+> baseline de capacidade). Treinadores B2/B3 independentes **não existem**
+> (008 pendente, destino formal em 018); `src/compare.py` **não existe**.
+
 ## Resumo conceitual e proposta de experimento em MNIST
 
 ---
@@ -95,6 +106,7 @@ Isso dá **3 (regra de atualização) × 3 (política de reset) = 9 configuraç�
 ### Ordem de implementação sugerida
 
 > **Atualizado (relatório Astra, commit `6f47914`):** a análise identificou defeitos P0/P1 no B1 que impedem interpretar os ~10% registrados. A ordem foi reorganizada para **reparar antes de refinar** — ver a seção de Tasks abaixo (012→016).
+> **Atualizado (revisão 018, commit `f5d3a5a` auditado):** 012–017 executadas; B1/B+ seguem ~9–10% com congelamento após a 1ª epoch (013/014/015/016: resultados negativos/marginais, não superioridade). 018 reconcilia docs e fila sem código novo. Próximo: 019 (testes + ambiente) → 024 (diagnóstico como marco) → 025/026/027 condicionadas.
 
 1. Rede A treinada e validada primeiro, como referência fixa de acurácia/curva de convergência.
 2. Rede B com uma única configuração inicial (ex.: B1 + reset "zera só atualizados") para validar que o mecanismo básico aprende algo em MNIST (não só em XOR).
@@ -108,23 +120,29 @@ Isso dá **3 (regra de atualização) × 3 (política de reset) = 9 configuraç�
 
 ```
 ideia/
-├── README.md              ← este arquivo
+├── README.md              ← este arquivo (estado real + limitações)
 ├── AGENTS.md              ← convenções para agentes de IA neste repositório
+├── docs/
+│   ├── ideia.md            ← proposta científica (hipóteses, não resultados)
+│   └── reports/
+│       └── revisao-f5d3a5a.md ← auditoria 018 (execução × evidência × resultado)
+├── astra-relatório-commit-6f47914.md ← análise externa preservada (não reescrita)
 ├── .tasks/
 │   ├── task.md            ← padrão de escrita de tasks
+│   ├── INDEX.md           ← índice auditado 001–018 (texto das tasks intacto)
 │   ├── 001-baseline-mlp.md
 │   ├── 002-utils-and-data.md
 │   ├── 003-fake-gradient.md
 │   ├── 004-ternary-network.md
-│   ├── 005-counter-rules.md
+│   ├── 005-counter-rules.md   ← primitivas B1/B2/B3 (treinadores B2/B3 integrados: não existem)
 │   ├── 006-reset-policies.md
-│   ├── 007-b1-initial.md
-│   ├── 008-b2-b3-variants.md
-│   ├── 009-comparison.md
+│   ├── 007-b1-initial.md       ← histórico: declara 20 epochs, evidência ausente (ver revisao-f5d3a5a §3.1)
+│   ├── 008-b2-b3-variants.md  ← PENDENTE, substituída por 020/021/025 (ver INDEX)
+│   ├── 009-comparison.md       ← PENDENTE, substituída por 026/027 (ver INDEX)
 │   ├── 010-adaptive-radius-and-data-normalization.md
 │   ├── 011-leaky-counters-momentum.md
 │   ├── 012-repara-b1-contrato-matematico.md
-│   ├── 013-prova-aprendizado-subconjunto.md
+│   ├── 013-prova-aprendizado-subconjunto.md  ← resultado negativo explícito
 │   ├── 014-ensaio-mnist-auditable.md
 │   ├── 015-ablacoes-margin-homeostasis-leak.md
 │   ├── 016-benchmark-eficiencia.md
@@ -132,24 +150,26 @@ ideia/
 ├── src/
 │   ├── baseline.py        ← Rede A (MLP float32 + backprop)
 │   ├── ternary_net.py     ← Rede B (pesos ternários + contadores)
-│   ├── ternary_b1.py      ← B1: por neurônio + error-feedback
-│   ├── ternary_b2.py      ← B2: por camada Top-K
-│   ├── ternary_b3.py      ← B3: por rede Top-K
-│   ├── ternary_refined.py ← Rede B refinada (raio adaptativo + leaky + margin + homeostase)
-│   ├── counter_rules.py   ← Regras de atualização (B1, B2, B3)
+│   ├── ternary_b1.py      ← B1: por neurônio + error-feedback (CONTRATO_012 na docstring)
+│   ├── ternary_refined.py ← Rede B refinada (melhor config de 015; ganho marginal)
+│   ├── counter_rules.py   ← Regras de atualização (primitivas B1, B2, B3) + CounterManager
 │   ├── reset_policies.py  ← Políticas de zeragem de contadores
 │   ├── fake_gradient.py   ← Função fake gradient triangular + quantização
-│   ├── compare.py         ← Comparação qualitativa final
+│   ├── ablation.py        ← Runner das ablações (015)
 │   ├── playground/      ← Interface web Streamlit (017: stepper amostra-a-amostra B1/B2/B3)
 │   │   ├── app.py       ← UI (stepper, inspetor, runner, comparador)
-│   │   ├── tracer.py    ← instrumentação bit-idêntica ao treino (só observa)
+│   │   ├── tracer.py    ← instrumentação bit-idêntica ao treino (só observa; B2/B3 só como máscara)
 │   │   ├── state.py     ← session_state + cache MNIST
 │   │   └── plots.py     ← heatmaps/histogramas (matplotlib)
 │   └── utils.py           ← Utilitários (MNIST loader, plotting, etc.)
 ├── experiments/
-│   └── ...                ← scripts de execução de cada configuração
+│   ├── run_small_subset.py  ← 013 (subconjunto fixo + diagnóstico)
+│   ├── run_mnist_full.py    ← 014 (proveniência + 3 sementes)
+│   ├── run_ablations.py     ← 015 (13 configs)
+│   └── run_benchmark.py     ← 016 (A vs B1 vs B+)
 └── results/
-    └── ...                ← gráficos, logs, métricas
+    ├── INDEX.md           ← execução × interpretação por experimento (+ órfãos)
+    └── exp-NNN-*/         ← gráficos, logs, métricas (008/009: dirs vazios = não executados)
 ```
 
 ## Tasks (ordem de execução)
@@ -173,6 +193,12 @@ ideia/
 | 015 | `015-ablacoes-margin-homeostasis-leak.md` | Ablações: margem, homeostase e leak sobre o B1 corrigido | 016 |
 | 016 | `016-benchmark-eficiencia.md` | Benchmark final + validação da proposta de eficiência | — |
 | 017 | `017-playground-viz.md` | Playground Streamlit: stepper amostra-a-amostra B1/B2/B3 sobre MNIST | — |
+| 018 | `.opencode/tasks/proxima-rodada/018-organiza-documentacao-e-fila.md` | Reconciliação 018: `docs/reports/revisao-f5d3a5a.md`, `docs/ideia.md`, `.tasks/INDEX.md`, `results/INDEX.md`, README fiel; destino formal de 008/009 | 019 |
+
+> 008/009 seguem **pendentes e substituídas** (textos preservados): 008 → 020/021/025,
+> 009 → 026/027 (detalhes em `.tasks/INDEX.md` e `docs/reports/revisao-f5d3a5a.md` §5).
+> A fila 019–027 (contrato versionado, passo único, protocolo, diagnóstico 024 como marco,
+> reavaliações condicionadas, consolidação) está em `.opencode/plans/proxima-rodada/plan.md`.
 
 ## Dependências
 
