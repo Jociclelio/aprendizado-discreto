@@ -46,8 +46,9 @@ Nenhuma para o planejamento. Questões científicas (regra de atualização, gen
 | 1 | [018-organiza-documentacao-e-fila.md](../../tasks/proxima-rodada/018-organiza-documentacao-e-fila.md) | nenhuma | resolvida por subtasks (018-1 8/10 + 018-2 fechada 10/10; libera 019) |
 | 1.1 | [018-1-corrige-interpretacao-015-congelamento.md](../../tasks/proxima-rodada/018-1-corrige-interpretacao-015-congelamento.md) | 018 | resolvida por subtasks (revisada 8/10; correção 018-2 fechada 10/10; libera 019) |
 | 1.2 | [018-2-corrige-readme-112-congelamento.md](../../tasks/proxima-rodada/018-2-corrige-readme-112-congelamento.md) | 018-1 | fechada (revisada 10/10, sem pendências) |
-| 2 | [019-estrutura-testes-e-ambiente.md](../../tasks/proxima-rodada/019-estrutura-testes-e-ambiente.md) | 018 família resolvida (018 + 018-1 + 018-2) | pendente (liberada) |
-| 3 | [020-versiona-contrato-algoritmico.md](../../tasks/proxima-rodada/020-versiona-contrato-algoritmico.md) | 019 | pendente |
+| 2 | [019-estrutura-testes-e-ambiente.md](../../tasks/proxima-rodada/019-estrutura-testes-e-ambiente.md) | 018 família resolvida (018 + 018-1 + 018-2) | aguardando subtasks (revisada 7/10, corrigir) |
+| 2.1 | [019-1-corrige-testes-e-lock.md](../../tasks/proxima-rodada/019-1-corrige-testes-e-lock.md) | 019 | pendente |
+| 3 | [020-versiona-contrato-algoritmico.md](../../tasks/proxima-rodada/020-versiona-contrato-algoritmico.md) | 019-1 | pendente |
 | 4 | [021-unifica-passo-de-treinamento.md](../../tasks/proxima-rodada/021-unifica-passo-de-treinamento.md) | 020 | pendente |
 | 5 | [022-padroniza-protocolo-e-proveniencia.md](../../tasks/proxima-rodada/022-padroniza-protocolo-e-proveniencia.md) | 021 | pendente |
 | 6 | [023-corrige-selecao-e-checkpoints.md](../../tasks/proxima-rodada/023-corrige-selecao-e-checkpoints.md) | 022 | pendente |
