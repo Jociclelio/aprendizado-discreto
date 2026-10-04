@@ -36,13 +36,13 @@ Criar suíte automatizada e ambiente reproduzível sem refatorar `src/` estrutur
 4/10 — Traduzir checks ad-hoc em testes determinísticos com oráculos comportamentais exigiu desenho cuidadoso, mas foi direto.
 
 ### Revisão
-- Orquestrador: —
-- Alvo: —
-- Avaliações: —
-- Nota final: _/10
-- Parecer: —
-- Decisão: pendente
+- Orquestrador: task-master (longcat-2.5-preview-free)
+- Alvo: ec73640 + 4bafc57 (registro 4bafc57)
+- Avaliações: Muse Spark 1.3: 7/10; Nemotron 3 Ultra: 10/10; GPT-5.6 Terra: 6/10
+- Nota final: 7/10
+- Parecer: Entrega sólida — suíte pytest completa (118 testes), estrutura unit/integration limpa, src/ intacto. Porém 2/3 revisores identificaram problemas convergentes: (1) 3 asserções tautológicas em test_independencia, test_indices_int_sem_IndexError e test_apply_reset_on_manager_all_layers_normalize (C2 parcial); (2) testes de equivalência CLI/tracer usam randn em vez de sequência sintética em [0,1] (C3 parcial); (3) dependências scikit-learn>=1.3 e pytest-cov>=5.0 não travadas no requirements-lock.txt (C4 parcial). C1 atendido por todos. Decisão: corrigir — problemas são reais, delimitados e não comprometem a entrega estrutural.
+- Decisão: corrigir
 - Reversão: não se aplica
-- Próximo passo: 020
+- Próximo passo: 019-1 (correção de tautologias, entradas [0,1] e pins)
 
 Plano: [plan.md](../../plans/proxima-rodada/plan.md)
