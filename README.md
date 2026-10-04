@@ -109,7 +109,7 @@ Isso dá **3 (regra de atualização) × 3 (política de reset) = 9 configuraç�
 ### Ordem de implementação sugerida
 
 > **Atualizado (relatório Astra, commit `6f47914`):** a análise identificou defeitos P0/P1 no B1 que impedem interpretar os ~10% registrados. A ordem foi reorganizada para **reparar antes de refinar** — ver a seção de Tasks abaixo (012→016).
-> **Atualizado (revisão 018, commit `f5d3a5a` auditado):** 012–017 executadas; B1/B+ seguem ~9–10% com congelamento após a 1ª epoch (013/014/015/016: resultados negativos/marginais, não superioridade). 018 reconcilia docs e fila sem código novo. Próximo: 019 (testes + ambiente) → 024 (diagnóstico como marco) → 025/026/027 condicionadas.
+> **Atualizado (revisão 018, commit `f5d3a5a` auditado):** 012–017 executadas; B1/B+ seguem ~9–10% — base, 6× leak e `homeo_0.25` congelam após a 1ª epoch (`base [19896,0,0]`, leak `~[19915,0,0]`, `homeo_0.25 [57829,0,0]`), enquanto variantes com margem/combinações transitam nas 3 epochs (ex. `margin_1 [168146,134101,131680]`) mas seguem ~9–10%, sem sucesso científico (013/014/015/016: resultados negativos/marginais, não superioridade). 018 reconcilia docs e fila sem código novo. Próximo: 019 (testes + ambiente) → 024 (diagnóstico como marco) → 025/026/027 condicionadas.
 
 1. Rede A treinada e validada primeiro, como referência fixa de acurácia/curva de convergência.
 2. Rede B com uma única configuração inicial (ex.: B1 + reset "zera só atualizados") para validar que o mecanismo básico aprende algo em MNIST (não só em XOR).
