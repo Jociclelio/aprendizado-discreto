@@ -1,6 +1,6 @@
 # Task 018-1: corrige interpretação 015 congelamento
 
-Estado: pendente
+Estado: aguardando revisão
 Depende de: 018
 Origem: 018 (correção; preserva entrega 46ade96)
 
@@ -14,17 +14,17 @@ Corrigir apenas a generalização falsa do congelamento universal em 015/B+ sem 
 - `AGENTS.md` — convenção de fila e commits.
 
 ## Corretude
-- [ ] C1 — `revisao-f5d3a5a.md:64` não afirma congelamento “em todas as configs”; distingue quem congela de margem/combinações que transitam, mantendo conclusão marginal sem inferir sucesso.
-- [ ] C2 — `results/INDEX.md:20,29` e `.tasks/INDEX.md:24` não propagam congelamento como padrão 010/011/013/014/015/016; precisão verificável por `git show <entrega>:results/exp-015-ablacoes/metrics.json`.
-- [ ] C3 — `README.md:9-10` não generaliza B1/B+ como congelamento após 1ª epoch; árvore/comandos auditados em 018 intactos.
-- [ ] C4 — Nenhum `.tasks/007–017` reescrito; `git diff <base-018-1>..<entrega-018-1> -- .tasks/` vazio salvo `.tasks/INDEX.md`; links locais verificados.
+- [x] C1 — `revisao-f5d3a5a.md:64` não afirma congelamento “em todas as configs”; distingue quem congela de margem/combinações que transitam, mantendo conclusão marginal sem inferir sucesso.
+- [x] C2 — `results/INDEX.md:20,29` e `.tasks/INDEX.md:24` não propagam congelamento como padrão 010/011/013/014/015/016; precisão verificável por `git show <entrega>:results/exp-015-ablacoes/metrics.json`.
+- [x] C3 — `README.md:9-10` não generaliza B1/B+ como congelamento após 1ª epoch; árvore/comandos auditados em 018 intactos.
+- [x] C4 — Nenhum `.tasks/007–017` reescrito; `git diff <base-018-1>..<entrega-018-1> -- .tasks/` vazio salvo `.tasks/INDEX.md`; links locais verificados.
 
 ## Execução
-- Modelo: —
-- Base: —
-- Entrega: —
-- Arquivos da entrega: —
-- Evidências: —
+- Modelo: opencode/muse-spark-1.3-contributor-free
+- Base: 0ef98fab2f3840380bc1b11d206664533cc52f4e
+- Entrega: ecb435091eae6988db10d9a6bcc4664479b89357
+- Arquivos da entrega: docs/reports/revisao-f5d3a5a.md, results/INDEX.md, .tasks/INDEX.md, README.md
+- Evidências: análise estática; oráculo `results/exp-015-ablacoes/metrics.json` (base [19896,0,0], leak ~[19915,0,0] ×6, homeo_0.25 [57829,0,0] vs margin_1 [168146,134101,131680], margin_2 [163126,125900,125950], margin_5 [186297,147984,147994], margin_2+homeo [193387,74462,165024]); `git diff -- .tasks/` só INDEX.md; sem código novo, sem reexecução
 
 ## Notas
 
@@ -32,7 +32,7 @@ Corrigir apenas a generalização falsa do congelamento universal em 015/B+ sem 
 2/10 — Edição documental pontual em 4 arquivos com oráculo JSON já identificado; sem código nem ambiente.
 
 ### Dificuldade sentida
-_/10 —
+2/10 — Edição documental em 4 arquivos com oráculo JSON já identificado; verificação por grep/python do metrics.json e diff restrito a `.tasks/INDEX.md`.
 
 ### Revisão
 - Orquestrador: —
