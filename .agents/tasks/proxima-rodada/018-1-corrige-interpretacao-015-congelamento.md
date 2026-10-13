@@ -8,7 +8,7 @@ Origem: 018 (correção; preserva entrega 46ade96)
 Corrigir apenas a generalização falsa do congelamento universal em 015/B+ sem reescrever evidências nem histórico. Preservar a entrega 018 (46ade96). Editar somente `docs/reports/revisao-f5d3a5a.md`, `results/INDEX.md`, `.tasks/INDEX.md` e `README.md` para distinguir: base, 6× leak e homeo_0.25 congelam `[*,0,0]` após epoch 1; variantes com margem/combinações continuam transitando (ex.: margin_1/2/5 e margin_2+homeo) mas seguem ~9–10% sem sucesso científico. Não migrar código, não reexecutar experimentos, não alterar `.tasks/007–017` históricos.
 
 ## Contexto
-- `.opencode/tasks/proxima-rodada/018-organiza-documentacao-e-fila.md` — task mãe, decisão corrigir, nota 7/10, alvo base f5d3a5a/entrega 46ade96/registro 70f5a29.
+- `.agents/tasks/proxima-rodada/018-organiza-documentacao-e-fila.md` — task mãe, decisão corrigir, nota 7/10, alvo base f5d3a5a/entrega 46ade96/registro 70f5a29.
 - `results/exp-015-ablacoes/metrics.json` — oráculo: `base [19896,0,0]`, leak `~[19915,0,0]`, `homeo_0.25 [57829,0,0]` vs `margin_1 [168146,134101,131680]`, `margin_2 [163126,125900,125950]`, `margin_5 [186297,147984,147994]`, `margin_2+homeo [193387,74462,165024]` (listas = [epoch1,epoch2,epoch3]).
 - `docs/reports/revisao-f5d3a5a.md:64`, `results/INDEX.md:20,29`, `.tasks/INDEX.md:24`, `README.md:9-10` — frases universais falsas a corrigir no SHA 46ade96.
 - `AGENTS.md` — convenção de fila e commits.

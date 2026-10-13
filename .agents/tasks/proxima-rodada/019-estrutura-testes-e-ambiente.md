@@ -1,6 +1,6 @@
 # Task 019: estrutura testes e ambiente reproduzível
 
-Estado: pendente
+Estado: aguardando subtasks (019-1)
 Depende de: 018
 Origem: nenhuma
 
@@ -12,7 +12,7 @@ Criar suíte automatizada e ambiente reproduzível sem refatorar `src/` estrutur
 - `src/ternary_b1.py` — núcleo com contrato 012 a proteger por regressão.
 - `src/utils.py` — agregados a testar sem efeitos de escrita.
 - `requirements.txt` — manifesto atual sem versões travadas.
-- `.opencode/tasks/proxima-rodada/018-organiza-documentacao-e-fila.md` — índices e estado reconciliado.
+- `.agents/tasks/proxima-rodada/018-organiza-documentacao-e-fila.md` — índices e estado reconciliado.
 
 ## Corretude
 - [x] C1 — `python -m pytest` a partir da raiz passa no ambiente registrado, sem acesso a dados externos e sem criar artefatos em `results/` (saídas em diretório temporário do runner).

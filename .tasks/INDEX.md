@@ -6,7 +6,7 @@
 > Os arquivos `.tasks/NNN-*.md` são **histórico**: nenhum foi editado por 018.
 > Este índice reconcilia o que cada task declara com as evidências existentes.
 > Auditoria completa: `docs/reports/revisao-f5d3a5a.md`. Experimentos: `results/INDEX.md`.
-> Fila seguinte (019–027): `.opencode/plans/proxima-rodada/plan.md`.
+> Fila seguinte (019–027): `.agents/plans/proxima-rodada/plan.md`.
 
 | # | Task | Execução | Evidência | Resultado científico | Observação |
 |---|---|---|---|---|---|

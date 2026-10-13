@@ -2,8 +2,8 @@
 
 **Commit revisado:** `f5d3a5ada972343fc9ea5c96a9b5b2beeae62b89` ([017] playground)
 **Relatório Astra de referência:** `astra-relatório-commit-6f47914.md` (análise do commit `6f47914`; preservado, não reescrito)
-**Task de origem:** `.opencode/tasks/proxima-rodada/018-organiza-documentacao-e-fila.md`
-**Plano:** `.opencode/plans/proxima-rodada/plan.md`
+**Task de origem:** `.agents/tasks/proxima-rodada/018-organiza-documentacao-e-fila.md`
+**Plano:** `.agents/plans/proxima-rodada/plan.md`
 **Método:** análise estática (leitura de tasks, código, CSV/JSON/logs versionados). Nenhum treino foi reexecutado; nenhum código de `src/` foi alterado.
 
 ## 1. O que esta revisão entrega

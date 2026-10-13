@@ -8,7 +8,7 @@ Origem: 018-1 (correção; preserva entregas 46ade96 e ecb4350)
 Corrigir apenas a generalização falsa residual em `README.md:112` (“B1/B+ seguem ~9–10% com congelamento após a 1ª epoch (013/014/015/016…)”), herdada de 46ade96 e fora do diff 0ef98fa..ecb4350, que contradiz o `README.md:9-10` já corrigido em 018-1. Reescrever só essa frase no mesmo padrão de `:9-10`: congelam após a 1ª epoch só base, as 6 leak e `homeo_0.25`; variantes 015 com margem/combinações transitam nas 3 epochs mas seguem ~9–10%, sem sucesso científico. Preservar as entregas 018 (46ade96) e 018-1 (ecb4350). Não migrar código, não reexecutar experimentos, não alterar `.tasks/007–017` históricos nem `docs/reports/revisao-f5d3a5a.md`, `results/INDEX.md`, `.tasks/INDEX.md`.
 
 ## Contexto
-- `.opencode/tasks/proxima-rodada/018-1-corrige-interpretacao-015-congelamento.md` — task mãe, decisão corrigir, nota 8/10, alvo base 0ef98fa/entrega ecb4350/registro 567b96f + revisão 68aab55.
+- `.agents/tasks/proxima-rodada/018-1-corrige-interpretacao-015-congelamento.md` — task mãe, decisão corrigir, nota 8/10, alvo base 0ef98fa/entrega ecb4350/registro 567b96f + revisão 68aab55.
 - `README.md:9-10` (já corrigido em ecb4350) — padrão de redação a replicar em `:112`.
 - `README.md:112` — frase residual falsa a corrigir.
 - `results/exp-015-ablacoes/metrics.json` — oráculo: `base [19896,0,0]`, leak `~[19915,0,0]` (×6), `homeo_0.25 [57829,0,0]` vs `margin_1 [168146,134101,131680]`, `margin_2 [163126,125900,125950]`, `margin_5 [186297,147984,147994]`, `margin_2+homeo [193387,74462,165024]` (listas = [epoch1,epoch2,epoch3]).

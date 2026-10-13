@@ -11,7 +11,7 @@ Encerrar a divergência entre documentação, código e resultados após a revis
 3. Versionar o contrato algorítmico antes de refatorar (020), depois unificar o passo de treino (021).
 4. Padronizar protocolo/proveniência (022), corrigir seleção/checkpoints (023).
 5. Executar diagnóstico em conjunto pequeno com controles (024) como marco científico; condicionar ablações (025), benchmark (026) e consolidação (027) ao resultado.
-6. Migrar planejamento de `.tasks/018–027` para `.opencode/tasks/proxima-rodada/` no contrato `task-writer`; `.tasks/001–017` permanecem como histórico.
+6. Migrar planejamento de `.tasks/018–027` para `.agents/tasks/proxima-rodada/` no contrato `task-writer`; `.tasks/001–017` permanecem como histórico. (Fila movida de `.opencode/` para `.agents/` em [028] — convenção pi, estrutura espelhada preserva links relativos.)
 
 ## Escopo
 Entregas: tasks 018–027 reescritas no template vigente, executadas uma por vez na ordem numérica.

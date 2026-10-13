@@ -196,12 +196,12 @@ ideia/
 | 015 | `015-ablacoes-margin-homeostasis-leak.md` | Ablações: margem, homeostase e leak sobre o B1 corrigido | 016 |
 | 016 | `016-benchmark-eficiencia.md` | Benchmark final + validação da proposta de eficiência | — |
 | 017 | `017-playground-viz.md` | Playground Streamlit: stepper amostra-a-amostra B1/B2/B3 sobre MNIST | — |
-| 018 | `.opencode/tasks/proxima-rodada/018-organiza-documentacao-e-fila.md` | Reconciliação 018: `docs/reports/revisao-f5d3a5a.md`, `docs/ideia.md`, `.tasks/INDEX.md`, `results/INDEX.md`, README fiel; destino formal de 008/009 | 019 |
+| 018 | `.agents/tasks/proxima-rodada/018-organiza-documentacao-e-fila.md` | Reconciliação 018: `docs/reports/revisao-f5d3a5a.md`, `docs/ideia.md`, `.tasks/INDEX.md`, `results/INDEX.md`, README fiel; destino formal de 008/009 | 019 |
 
 > 008/009 seguem **pendentes e substituídas** (textos preservados): 008 → 020/021/025,
 > 009 → 026/027 (detalhes em `.tasks/INDEX.md` e `docs/reports/revisao-f5d3a5a.md` §5).
 > A fila 019–027 (contrato versionado, passo único, protocolo, diagnóstico 024 como marco,
-> reavaliações condicionadas, consolidação) está em `.opencode/plans/proxima-rodada/plan.md`.
+> reavaliações condicionadas, consolidação) está em `.agents/plans/proxima-rodada/plan.md`.
 
 ## Dependências
 
