@@ -25,17 +25,17 @@ Corrigir os problemas identificados na revisão da task 019:
 - `requirements-lock.txt` — dependências com faixa aberta
 
 ## Corretude
-- [ ] C1 — `python -m pytest` continua passando (118+ testes) após as correções
-- [ ] C2 — As 3 asserções tautológicas foram substituídas por oráculos comportamentais reais
-- [ ] C3 — Testes de equivalência usam sequência sintética em `[0,1]`
-- [ ] C4 — Todas as dependências no `requirements-lock.txt` estão pinadas com `==`
+- [x] C1 — `python -m pytest` continua passando (118 testes) após as correções
+- [x] C2 — As 3 asserções tautológicas foram substituídas por oráculos comportamentais reais
+- [x] C3 — Testes de equivalência usam sequência sintética em `[0,1]`
+- [x] C4 — Todas as dependências no `requirements-lock.txt` estão pinadas com `==`
 
 ## Execução
-- Modelo: —
-- Base: —
-- Entrega: —
-- Arquivos da entrega: —
-- Evidências: —
+- Modelo: pytest 9.1.1 + numpy 2.5.3 + torch 2.13.0 + scikit-learn 1.9.1 + pytest-cov 7.1.0
+- Base: 3143ee1 (HEAD pré-entrega), ambiente validado Python 3.14.7
+- Entrega: eaab968
+- Arquivos da entrega: `tests/integration/test_b1_integration.py`, `tests/integration/test_cli_tracer_equivalence.py`, `tests/unit/test_reset_policies.py`, `requirements-lock.txt`
+- Evidências: 118 testes passam em 3.35s; `grep "assert True" tests/` vazio; `grep -c ">=" requirements-lock.txt` = 0 (8 pins `==`); oráculos verificados numericamente antes de fixar (test_independencia: d1=[[4,-4]], d1b=[[0,0]] com pesos da camada 2 zerados; normalize: 10×(1/10)=1 em todas as camadas com dtype int64 preservado); scikit-learn e pytest-cov instalados no ambiente validado antes do pin para registrar as versões reais
 
 ## Notas
 
@@ -43,7 +43,7 @@ Corrigir os problemas identificados na revisão da task 019:
 3/10 — Correções pontuais e bem delimitadas: substituir asserções, trocar fonte de entradas e travar versões.
 
 ### Dificuldade sentida
-_/10 —
+2/10 — Correções pontuais; o único cuidado foi verificar numericamente os oráculos (d1b anulado, escala 10→1) antes de fixar as asserções, e instalar scikit-learn/pytest-cov no ambiente validado para pinar versões reais em vez de chutes.
 
 ### Revisão
 - Orquestrador: —
@@ -54,5 +54,7 @@ _/10 —
 - Decisão: pendente
 - Reversão: não se aplica
 - Próximo passo: 020
+
+- Estado: entrega eaab968 registrada, aguardando revisão
 
 Plano: [plan.md](../../plans/proxima-rodada/plan.md)
