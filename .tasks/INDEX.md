@@ -1,4 +1,7 @@
-# Índice de tasks (001–018) — histórico preservado + estado auditado
+# Índice de tasks (001–017, 028) — histórico preservado + estado auditado
+
+> 028 (ferramenta/infra, pi-task-cycle) executada fora da fila 019–027 por
+> pedido explícito do usuário; a fila científica permanece reservada.
 
 > Os arquivos `.tasks/NNN-*.md` são **histórico**: nenhum foi editado por 018.
 > Este índice reconcilia o que cada task declara com as evidências existentes.
@@ -25,6 +28,7 @@
 | 016 | benchmark | feita | `experiments/run_benchmark.py`; `results/exp-016-benchmark/{metrics.json,benchmark.csv,benchmark.png,README.md}` (3 seeds) | **trade-off**: A 92–93% vs B ~9–10%; inferência 3.98×, treino 2.25×; 8/16 bits idênticos | sem reivindicação de MACs zero; refazer com protocolo 023 em 026 |
 | 017 | playground | feita | `src/playground/{tracer,app,state,plots}.py`; `results/exp-017-playground/{tracer-bit-identity.log,smoke.log,figs/,smoke-runner-b1/,smoke-comparison/}` | ferramenta (demos curtas, não experimento) | `streamlit run` não reexecutado em 018 (evidência = smoke 2026-10-03); B2/B3 só como máscara no tracer |
 | 018 | organiza docs e fila (esta) | esta revisão | `docs/reports/revisao-f5d3a5a.md`, `docs/ideia.md`, este índice, `results/INDEX.md`, README fiel | documental | sem código novo; sem reescrita de evidências; textos 001–017 intactos |
+| 028 | port do workflow task-cycle (opencode → pi) | feita | `~/Documentos/pidev/pi-task-cycle/` (extensão, 4 skills, pool multi-modelo, `install.sh`); testes `node --test` 16/16; e2e real sd2 (executor commitou entrega+registro; revisor deu parecer com identidade confirmada); skills visíveis em sessão nova | ferramenta (infra de agentes) | instalação global em `~/.pi/agent/settings.json`; convenção de projetos `.agents/` intercambiável com opencode |
 
 ## Destinos formais (resumo)
 
