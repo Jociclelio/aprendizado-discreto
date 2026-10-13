@@ -111,8 +111,13 @@ class TestIntegracaoCounterManager:
 
     def test_apply_reset_on_manager_all_layers_normalize(self):
         cm = CounterManager([(4, 4), (2, 4)])
-        cm.accumulate(0, np.ones((4, 4), dtype=np.int64))
-        cm.accumulate(1, np.ones((2, 4), dtype=np.int64))
+        cm.accumulate(0, np.full((4, 4), 10, dtype=np.int64))
+        cm.accumulate(1, np.full((2, 4), 10, dtype=np.int64))
+        # Sem try/except: IndexError deve propagar e falhar o teste.
         apply_reset_on_manager_all_layers(cm, policy="normalize", target_scale=1.0)
-        # Não deve levantar IndexError
-        assert True
+        # Oráculo: escala p/ o alvo em todas as camadas (10 * 1/10 = 1)
+        # e dtype inteiro preservado.
+        assert np.all(cm.weight_counters[0] == 1)
+        assert np.all(cm.weight_counters[1] == 1)
+        assert np.issubdtype(cm.weight_counters[0].dtype, np.integer)
+        assert np.issubdtype(cm.weight_counters[1].dtype, np.integer)

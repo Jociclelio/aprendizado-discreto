@@ -105,8 +105,10 @@ class TestDeltasPorCamada:
         net.layers[2].weights[:] = 0
         d1b = propagate_delta_with_fake_quantized(
             d2, net.layers[2].weights.T, preC[-2], radius=100)
-        # d1b deve ser diferente de d1 (pesos zerados)
-        assert True  # deltas recomputados por camada, sem reuse
+        # Oráculo: pesos zerados a montante anulam o delta recomputado;
+        # d1 original (pesos reais) é não-nulo e distinto de d1b.
+        assert np.all(d1b == 0)
+        assert not np.array_equal(d1, d1b)
 
 
 class TestMascaraReset:
@@ -187,12 +189,15 @@ class TestNormalizacao:
 
     def test_indices_int_sem_IndexError(self):
         cm = CounterManager([(4, 4), (2, 4)])
-        try:
-            apply_reset_on_manager_all_layers(cm, policy="normalize", target_scale=1.0)
-            allint = True
-        except IndexError:
-            allint = False
-        assert allint
+        cm.accumulate(0, np.full((4, 4), 10, dtype=np.int64))
+        cm.accumulate(1, np.full((2, 4), 10, dtype=np.int64))
+        # Sem try/except: IndexError (índices não-inteiros) deve falhar o teste.
+        apply_reset_on_manager_all_layers(cm, policy="normalize", target_scale=1.0)
+        # Oráculo: normalize com índices vazios escala TODOS os contadores
+        # p/ o alvo (10 * 1/10 = 1) e preserva dtype inteiro.
+        for C in cm.weight_counters:
+            assert np.issubdtype(C.dtype, np.integer)
+            assert np.all(C == 1)
 
 
 class TestLeaksSimetricos:

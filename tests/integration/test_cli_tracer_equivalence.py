@@ -22,7 +22,7 @@ class TestBitIdentity:
         net_tr = TernaryNet(seed=42)
         cm_tr = CounterManager(list(LAYER_SHAPES))
 
-        x = np.random.randn(784).astype(np.float32)
+        x = np.random.rand(784).astype(np.float32)
         y = 3
 
         m_ref = train_sample_online(net_ref, cm_ref, x, y)
@@ -48,7 +48,7 @@ class TestBitIdentity:
         net_tr = TernaryNet(seed=42)
         cm_tr = CounterManager(list(LAYER_SHAPES))
 
-        x_seq = [rng.randn(784).astype(np.float32) for _ in range(5)]
+        x_seq = [rng.rand(784).astype(np.float32) for _ in range(5)]
         y_seq = [int(rng.randint(0, 10)) for _ in range(5)]
 
         for i in range(4):
@@ -77,7 +77,7 @@ class TestBitIdentity:
         net_tr = TernaryNet(seed=42)
         cm_tr = CounterManager(list(LAYER_SHAPES))
 
-        x = np.random.randn(784).astype(np.float32)
+        x = np.random.rand(784).astype(np.float32)
         y = 5
 
         m_ref = train_sample_online(net_ref, cm_ref, x, y, adaptive_radius=True, scale_factor=1.0)
@@ -102,7 +102,7 @@ class TestTracerB2B3:
         set_seed(7)
         net = TernaryNet(seed=7)
         cm = CounterManager(list(LAYER_SHAPES))
-        x = np.random.randn(784).astype(np.float32)
+        x = np.random.rand(784).astype(np.float32)
         tr = trace_b2(net, cm, x, 3)
         sel = tr["metrics"]["selected_weights"]
         assert sel > 0
@@ -111,7 +111,7 @@ class TestTracerB2B3:
         set_seed(7)
         net = TernaryNet(seed=7)
         cm = CounterManager(list(LAYER_SHAPES))
-        x = np.random.randn(784).astype(np.float32)
+        x = np.random.rand(784).astype(np.float32)
         tr = trace_b3(net, cm, x, 3)
         sel = tr["metrics"]["selected_weights"]
         assert sel > 0
@@ -120,7 +120,7 @@ class TestTracerB2B3:
         set_seed(7)
         net = TernaryNet(seed=7)
         cm = CounterManager(list(LAYER_SHAPES))
-        tr = trace_b1(net, cm, np.random.randn(784).astype(np.float32), 3)
+        tr = trace_b1(net, cm, np.random.rand(784).astype(np.float32), 3)
         for key in ("z_list", "fake_cont", "q_fake", "deltas", "dw_float",
                     "dw_int", "Cw_before", "Cw_acc", "Cw_after", "masks_w",
                     "W_after", "metrics"):
