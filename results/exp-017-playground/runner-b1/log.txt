@@ -1,0 +1,16 @@
+batch   1/16 | loss=0.2344 | trans=18973
+batch   2/16 | loss=0.2750 | trans=0
+batch   3/16 | loss=0.2844 | trans=2571
+batch   4/16 | loss=0.3313 | trans=0
+batch   5/16 | loss=0.3375 | trans=0 | acc2000=0.1170
+batch   6/16 | loss=0.3375 | trans=0
+batch   7/16 | loss=0.3250 | trans=0
+batch   8/16 | loss=0.3438 | trans=0
+batch   9/16 | loss=0.3438 | trans=0
+batch  10/16 | loss=0.3313 | trans=0 | acc2000=0.1170
+batch  11/16 | loss=0.3625 | trans=0
+batch  12/16 | loss=0.3438 | trans=0
+batch  13/16 | loss=0.3313 | trans=0
+batch  14/16 | loss=0.3500 | trans=0
+batch  15/16 | loss=0.3563 | trans=0 | acc2000=0.1170
+batch  16/16 | loss=0.3500 | trans=0 | acc2000=0.1170
